@@ -125,11 +125,11 @@
         }
 
         /* Toggle Switch Styling */
-        .toggle-checkbox:checked {
-            background-color: var(--accent);
-            border-color: var(--accent);
+        .toggle-checkbox:checked + div {
+            background-color: var(--accent) !important;
+            border-color: var(--accent) !important;
         }
-        .toggle-checkbox:checked + .toggle-dot {
+        .toggle-checkbox:checked ~ .toggle-dot {
             transform: translateX(1.25rem);
             background-color: #010101;
         }
@@ -1447,7 +1447,7 @@
                                     <p class="text-xs text-rcMuted font-sans">Menampilkan tombol melayang di pojok kanan bawah agar klien cepat chat ke 089640047789</p>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                                    <input type="checkbox" id="settingFloatingWaToggle" class="sr-only toggle-checkbox" checked>
+                                    <input type="checkbox" id="settingFloatingWaToggle" onchange="saveFloatingWaToggle()" class="sr-only toggle-checkbox" checked>
                                     <div class="w-11 h-6 bg-zinc-700 rounded-full border border-rcBorderHover transition-colors"></div>
                                     <span class="toggle-dot absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform"></span>
                                 </label>
@@ -4520,6 +4520,19 @@
             applyOwnerNameEverywhere();
             renderOverviewStats();
             showToast("Semua Setting Disimpan!", "Pengaturan baru aktif dan tersinkron ke cloud.");
+        }
+
+        function saveFloatingWaToggle() {
+            const toggleEl = document.getElementById('settingFloatingWaToggle');
+            if (!toggleEl) return;
+            adminSettings.floatingWaEnabled = toggleEl.checked;
+            persistAdminSettings();
+            showToast(
+                toggleEl.checked ? "Tombol Floating WA Aktif" : "Tombol Floating WA Disembunyikan",
+                toggleEl.checked
+                    ? "Tombol melayang WhatsApp tampil di pojok kanan bawah web publik."
+                    : "Tombol melayang WhatsApp disembunyikan dari web publik."
+            );
         }
 
         // Cloud API Connection & Sync
