@@ -48,7 +48,7 @@
         };
 
         /**
-         * Mengekstrak File ID Google Drive dari berbagai format URL umum
+- Mengekstrak File ID Google Drive dari berbagai format URL umum
          */
         function extractDriveFileId(url) {
             try {
@@ -74,7 +74,7 @@
         }
 
         /**
-         * Mengubah link Google Drive menjadi URL CDN yang stabil di browser HP & laptop
+- Mengubah link Google Drive menjadi URL CDN yang stabil di browser HP & laptop
          */
         function resolveDriveImageUrl(url) {
             try {
@@ -91,7 +91,7 @@
         }
 
         /**
-         * Fallback otomatis antar-mirror Google Drive jika salah satu endpoint gagal dimuat
+- Fallback otomatis antar-mirror Google Drive jika salah satu endpoint gagal dimuat
          */
         function handleDriveImgError(imgEl, customFallback) {
             try {
@@ -222,7 +222,7 @@
 <body class="bg-rcBlack text-rcText antialiased selection:bg-rcOrange selection:text-rcBlack">
 
     <!-- =========================================================
-         1. NAVIGATION BAR
+1. NAVIGATION BAR
     ========================================================== -->
     <header class="sticky top-0 z-40 bg-rcBlack/90 backdrop-blur-xl border-b border-rcBorder">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
@@ -283,7 +283,7 @@
     </header>
 
     <!-- =========================================================
-         2. HERO SECTION
+2. HERO SECTION
     ========================================================== -->
     <section id="beranda" class="bg-rc-ambient pt-10 pb-16 sm:pt-16 sm:pb-24 border-b border-rcBorder">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -384,7 +384,7 @@
     </section>
 
     <!-- =========================================================
-         3. TENTANG SAYA & LAYANAN UTAMA
+3. TENTANG SAYA & LAYANAN UTAMA
     ========================================================== -->
     <section id="tentang" class="py-16 sm:py-24 border-b border-rcBorder">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
@@ -471,7 +471,7 @@
     </section>
 
     <!-- =========================================================
-         4. PORTOFOLIO KARYA
+4. PORTOFOLIO KARYA
     ========================================================== -->
     <section id="portofolio" class="py-16 sm:py-24 border-b border-rcBorder">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-9">
@@ -521,7 +521,7 @@
     </section>
 
     <!-- =========================================================
-         5. JURNAL, TIPS & VIDEO BTS
+5. JURNAL, TIPS & VIDEO BTS
     ========================================================== -->
     <section id="jurnal" class="py-16 sm:py-24 border-b border-rcBorder">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-9">
@@ -575,7 +575,7 @@
     </section>
 
     <!-- =========================================================
-         6. FORM BOOKING & KONSULTASI DIRECT WHATSAPP
+6. FORM BOOKING & KONSULTASI DIRECT WHATSAPP
     ========================================================== -->
     <section id="kontak" class="py-16 sm:py-24">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -712,7 +712,7 @@
     </section>
 
     <!-- =========================================================
-         7. FOOTER & FLOATING WHATSAPP BUTTON
+7. FOOTER & FLOATING WHATSAPP BUTTON
     ========================================================== -->
     <footer class="border-t border-rcBorder bg-rcSurface/60 py-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -739,10 +739,10 @@
         href="https://wa.me/6289640047789?text=Halo%20Bang%20Rohman%20(Rohman%20Capture)%2C%20gue%20mau%20tanya%20jadwal%20sesi%20foto%20nih!"
         target="_blank"
         rel="noopener noreferrer"
-        class="btn-orange-solid pill-btn fixed bottom-5 right-5 z-40 px-5 py-3.5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-2.5"
+        class="btn-orange-solid pill-btn fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-40 px-5 py-3.5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-2.5 shadow-orange-glow hover:scale-105 transition-transform"
         aria-label="Chat WhatsApp Rohman Capture"
     >
-        <i class="fa-brands fa-whatsapp text-lg"></i>
+        <i class="fa-brands fa-whatsapp text-xl"></i>
         <span>Chat WhatsApp</span>
     </a>
 
