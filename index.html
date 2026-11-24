@@ -940,6 +940,8 @@
             waTemplate: "Halo Bang Rohman (Rohman Capture)! 👋\nPerkenalkan gue *{nama}*, mau tanya jadwal & booking sesi foto:\n\n• *Kategori:* {kategori}\n• *Tanggal:* {tanggal}\n• *Lokasi:* {lokasi}\n\nTerima kasih bro!",
             bookingStatus: 'Open Booking 2026/2027',
             floatingWaEnabled: true,
+            floatingWaText: 'Chat WhatsApp',
+            floatingWaMessage: 'Halo Bang Rohman (Rohman Capture), gue mau tanya jadwal sesi foto nih!',
             accentColor: '#F38B1C',
             customLogo: '',
             metaTitle: 'Rohman Capture — Fotografer Jakarta Timur',
@@ -1280,8 +1282,12 @@
                     floatingBtn.classList.add('hidden');
                 } else {
                     floatingBtn.classList.remove('hidden');
-                    const greet = encodeURIComponent(`Halo Bang ${ownerName} (Rohman Capture), gue mau tanya jadwal sesi foto nih!`);
+                    const customLabel = (activePublicSettings.floatingWaText || 'Chat WhatsApp').trim();
+                    const customMsg = (activePublicSettings.floatingWaMessage || `Halo Bang ${ownerName} (Rohman Capture), gue mau tanya jadwal sesi foto nih!`).trim();
+                    const greet = encodeURIComponent(customMsg);
                     floatingBtn.href = `https://wa.me/${waDigits}?text=${greet}`;
+                    const labelSpan = floatingBtn.querySelector('span');
+                    if (labelSpan) labelSpan.textContent = customLabel;
                 }
             }
 
