@@ -1,1237 +1,1929 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Portal — Rohman Capture</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            obsidian: '#010101',
-            surface: '#0B0B0D',
-            card: '#121216',
-            brand: '#FF6B00',
-            brandHover: '#FF852D',
-          },
-          fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    body {
-      background-color: #010101;
-      color: #F4F4F6;
-    }
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    input[type="number"] {
-      -moz-appearance: textfield;
-    }
-    ::-webkit-scrollbar { width: 7px; height: 7px; }
-    ::-webkit-scrollbar-track { background: #010101; }
-    ::-webkit-scrollbar-thumb { background: #27272A; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #FF6B00; }
-  </style>
-</head>
-<body class="antialiased selection:bg-brand selection:text-black">
-
-  <!-- TOAST NOTIFICATION -->
-  <div id="toastBox" class="fixed top-5 right-5 z-50 hidden max-w-sm rounded-xl border border-white/15 bg-card/95 backdrop-blur-md px-4 py-3 shadow-2xl transition-all">
-    <div class="flex items-start gap-3">
-      <span id="toastDot" class="mt-1 w-2.5 h-2.5 rounded-full bg-brand shrink-0"></span>
-      <div>
-        <p id="toastTitle" class="text-xs font-bold text-white">Notifikasi</p>
-        <p id="toastMsg" class="text-xs text-zinc-300 mt-0.5 leading-relaxed"></p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ======================================================================= -->
-  <!-- 1. LOCK SCREEN / LOGIN PIN                                              -->
-  <!-- ======================================================================= -->
-  <div id="lockScreen" class="min-h-screen flex items-center justify-center p-4 bg-obsidian">
-    <div class="w-full max-w-md rounded-3xl bg-card border border-white/10 p-7 sm:p-9 shadow-2xl">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-11 h-11 rounded-2xl bg-brand/15 border border-brand/40 flex items-center justify-center text-brand font-extrabold text-base">RC</div>
-        <div>
-          <h1 class="text-lg font-extrabold text-white tracking-tight">ROHMAN CAPTURE</h1>
-          <p class="text-xs text-zinc-400">Studio Admin & Cloud Control</p>
-        </div>
-      </div>
-
-      <!-- Form Login PIN -->
-      <div id="loginView">
-        <h2 class="text-xl font-bold text-white">Masukkan PIN Admin</h2>
-        <p class="text-xs text-zinc-400 mt-1">Gunakan 6 digit PIN untuk mengelola portofolio & sinkronisasi.</p>
-
-        <form id="loginForm" class="mt-5 space-y-4">
-          <div>
-            <input id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="••••••" required
-              class="w-full px-4 py-3.5 rounded-xl bg-obsidian border border-white/15 focus:border-brand focus:outline-none text-center text-2xl tracking-[0.5em] font-bold text-white" />
-          </div>
-          <p id="loginError" class="hidden text-xs text-red-400 font-medium"></p>
-          <button type="submit"
-            class="w-full py-3.5 rounded-xl bg-brand hover:bg-brandHover text-black font-extrabold text-sm transition shadow-lg shadow-brand/20">
-            Buka Portal Admin
-          </button>
-        </form>
-
-        <div class="mt-5 pt-4 border-t border-white/[0.07] flex items-center justify-between text-xs">
-          <span class="text-zinc-500">Default PIN: 123456</span>
-          <button id="showRecoveryBtn" type="button" class="text-brand hover:underline font-semibold">Lupa PIN?</button>
-        </div>
-      </div>
-
-      <!-- Form Pemulihan PIN -->
-      <div id="recoveryView" class="hidden">
-        <h2 class="text-xl font-bold text-white">Pemulihan PIN Server</h2>
-        <p class="text-xs text-zinc-400 mt-1">Masukkan Kode Pemulihan Utama untuk menyamakan PIN lokal & Google Apps Script.</p>
-
-        <form id="recoveryForm" class="mt-5 space-y-3.5">
-          <div>
-            <label class="block text-[11px] font-semibold text-zinc-400 mb-1">Kode Pemulihan Utama</label>
-            <input id="recKeyInput" type="text" placeholder="RC-ROHMAN-2026" required
-              class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian border border-white/15 focus:border-brand focus:outline-none text-sm text-white font-mono" />
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-[11px] font-semibold text-zinc-400 mb-1">PIN Baru (6 Digit)</label>
-              <input id="recNewPin" type="password" inputmode="numeric" maxlength="6" placeholder="123456" required
-                class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian border border-white/15 focus:border-brand focus:outline-none text-sm text-white text-center font-bold tracking-widest" />
-            </div>
-            <div>
-              <label class="block text-[11px] font-semibold text-zinc-400 mb-1">Konfirmasi PIN</label>
-              <input id="recConfirmPin" type="password" inputmode="numeric" maxlength="6" placeholder="123456" required
-                class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian border border-white/15 focus:border-brand focus:outline-none text-sm text-white text-center font-bold tracking-widest" />
-            </div>
-          </div>
-          <p id="recError" class="hidden text-xs text-red-400 font-medium"></p>
-          <button id="recSubmitBtn" type="submit"
-            class="w-full py-3 rounded-xl bg-brand hover:bg-brandHover text-black font-extrabold text-sm transition">
-            Reset PIN & Masuk
-          </button>
-          <button id="backToLoginBtn" type="button"
-            class="w-full py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-zinc-300 font-semibold text-xs transition">
-            Kembali ke Login
-          </button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- ======================================================================= -->
-  <!-- 2. MAIN ADMIN DASHBOARD                                                 -->
-  <!-- ======================================================================= -->
-  <div id="adminApp" class="hidden min-h-screen flex flex-col lg:flex-row">
-
-    <!-- SIDEBAR NAVIGATION -->
-    <aside class="w-full lg:w-64 bg-surface border-b lg:border-b-0 lg:border-r border-white/[0.08] flex flex-col justify-between shrink-0">
-      <div>
-        <div class="p-5 border-b border-white/[0.07] flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <span class="w-9 h-9 rounded-xl bg-brand/15 border border-brand/40 flex items-center justify-center text-brand font-extrabold text-sm">RC</span>
-            <div>
-              <span class="font-bold text-white text-sm block leading-none">ROHMAN CAPTURE</span>
-              <span class="text-[10px] text-zinc-400 tracking-wider uppercase">Admin Workspace</span>
-            </div>
-          </div>
-        </div>
-
-        <nav class="p-3 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-1 gap-1.5">
-          <button type="button" data-tab="overview" class="nav-tab active flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-brand text-black transition">
-            <span>Ringkasan</span>
-          </button>
-          <button type="button" data-tab="portfolio" class="nav-tab flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-zinc-300 hover:bg-white/[0.06] transition">
-            <span>Portofolio & Urutan</span>
-          </button>
-          <button type="button" data-tab="articles" class="nav-tab flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-zinc-300 hover:bg-white/[0.06] transition">
-            <span>Artikel & Cerita</span>
-          </button>
-          <button type="button" data-tab="settings" class="nav-tab flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-zinc-300 hover:bg-white/[0.06] transition">
-            <span>Teks & Setting</span>
-          </button>
-        </nav>
-      </div>
-
-      <div class="p-4 border-t border-white/[0.07] space-y-2">
-        <a href="index.html" target="_blank"
-           class="w-full py-2.5 px-3 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs font-semibold text-zinc-200 flex items-center justify-center gap-2 transition">
-          <span>Buka Web Publik ↗</span>
-        </a>
-        <button id="lockPortalBtn" type="button"
-          class="w-full py-2.5 px-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/25 text-xs font-semibold text-red-300 transition">
-          Kunci Portal
-        </button>
-      </div>
-    </aside>
-
-    <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 min-w-0 p-4 sm:p-7 lg:p-9 max-w-6xl">
-
-      <!-- TOP STATUS BAR -->
-      <div class="mb-6 flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/[0.07]">
-        <div>
-          <h1 id="pageTitle" class="text-xl sm:text-2xl font-extrabold text-white">Ringkasan Dashboard</h1>
-          <p id="pageSubtitle" class="text-xs text-zinc-400 mt-0.5">Kelola karya, kurasi posisi etalase, dan sinkronisasi cloud.</p>
-        </div>
-
-        <div class="flex items-center gap-2.5">
-          <div id="syncBadge" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-white/10 text-xs font-semibold text-zinc-300">
-            <span id="syncDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
-            <span id="syncStatusText">Memeriksa Cloud...</span>
-          </div>
-          <button id="topSyncBtn" type="button"
-            class="px-4 py-2 rounded-xl bg-brand hover:bg-brandHover text-black font-bold text-xs transition shadow-md shadow-brand/20">
-            Sync Sekarang
-          </button>
-        </div>
-      </div>
-
-      <!-- =================================================================== -->
-      <!-- TAB 1: RINGKASAN                                                    -->
-      <!-- =================================================================== -->
-      <section id="tab-overview" class="tab-panel space-y-6">
-        <div class="rounded-2xl bg-gradient-to-r from-card via-card to-brand/15 border border-white/10 p-6">
-          <span class="text-[11px] font-bold uppercase tracking-widest text-brand">Menciptakan Kebahagiaan</span>
-          <h2 class="text-lg sm:text-xl font-extrabold text-white mt-1">Selamat Datang Kembali, Surohman</h2>
-          <p class="text-xs sm:text-sm text-zinc-400 mt-1 max-w-2xl">
-            Atur urutan karya teratas untuk grid 3×3 di halaman utama, unggah proyek sesi terbaru, dan sinkronkan langsung ke Google Sheets.
-          </p>
-
-          <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <button type="button" onclick="openPortfolioModal()"
-              class="py-3 px-4 rounded-xl bg-brand hover:bg-brandHover text-black font-extrabold text-xs transition text-center">
-              + Tambah Karya Baru
-            </button>
-            <button type="button" onclick="switchTab('portfolio')"
-              class="py-3 px-4 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-white font-bold text-xs transition text-center">
-              Atur Posisi Karya (#1..N)
-            </button>
-            <button type="button" onclick="openArticleModal()"
-              class="py-3 px-4 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-white font-bold text-xs transition text-center">
-              + Tulis Cerita Sesi
-            </button>
-            <button type="button" onclick="syncAllToCloud()"
-              class="py-3 px-4 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-brand font-bold text-xs transition text-center">
-              Push Data ke Cloud
-            </button>
-          </div>
-        </div>
-
-        <!-- 4 Kartu Statistik Simetris -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="rounded-2xl bg-card border border-white/10 p-5">
-            <p class="text-xs text-zinc-400">Total Karya</p>
-            <p id="statTotalPortfolio" class="text-2xl sm:text-3xl font-extrabold text-white mt-1">0</p>
-            <p class="text-[11px] text-brand mt-1">Tampil 9 awal di Desktop</p>
-          </div>
-          <div class="rounded-2xl bg-card border border-white/10 p-5">
-            <p class="text-xs text-zinc-400">Kategori Aktif</p>
-            <p id="statTotalCategories" class="text-2xl sm:text-3xl font-extrabold text-white mt-1">0</p>
-            <p class="text-[11px] text-zinc-500 mt-1">Filter otomatis di web</p>
-          </div>
-          <div class="rounded-2xl bg-card border border-white/10 p-5">
-            <p class="text-xs text-zinc-400">Artikel & Catatan</p>
-            <p id="statTotalArticles" class="text-2xl sm:text-3xl font-extrabold text-white mt-1">0</p>
-            <p class="text-[11px] text-zinc-500 mt-1">Jurnal di balik lensa</p>
-          </div>
-          <div class="rounded-2xl bg-card border border-white/10 p-5">
-            <p class="text-xs text-zinc-400">Karya Posisi #1</p>
-            <p id="statTopWork" class="text-sm font-bold text-white mt-2 line-clamp-2">—</p>
-            <p class="text-[11px] text-emerald-400 mt-1">Etalase Utama</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- =================================================================== -->
-      <!-- TAB 2: PORTOFOLIO & PENGATURAN POSISI (#ANGKA + PANAH ATAS/BAWAH)   -->
-      <!-- =================================================================== -->
-      <section id="tab-portfolio" class="tab-panel hidden space-y-5">
-
-        <!-- Sticky Banner Simpan Urutan (Muncul Otomatis Saat Ada Perubahan Urutan) -->
-        <div id="orderDirtyBanner" class="hidden sticky top-3 z-30 rounded-2xl bg-brand text-black p-4 shadow-2xl flex flex-wrap items-center justify-between gap-3">
-          <div class="flex items-center gap-2.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-black animate-ping"></span>
-            <p class="text-xs sm:text-sm font-extrabold">Urutan posisi karya telah diubah! Simpan ke Google Sheets agar tampil di web publik.</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <button id="discardOrderBtn" type="button" class="px-3.5 py-2 rounded-xl bg-black/15 hover:bg-black/25 text-black font-bold text-xs transition">
-              Batal
-            </button>
-            <button id="saveOrderBtn" type="button" class="px-4 py-2 rounded-xl bg-black hover:bg-zinc-900 text-white font-extrabold text-xs transition">
-              Simpan Urutan Sekarang
-            </button>
-          </div>
-        </div>
-
-        <!-- Toolbar Filter & Tambah Karya -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-white/10 p-4 rounded-2xl">
-          <div class="flex flex-wrap items-center gap-2">
-            <select id="adminCategoryFilter"
-              class="px-3.5 py-2 rounded-xl bg-obsidian border border-white/15 text-xs font-semibold text-white focus:border-brand focus:outline-none">
-              <option value="Semua">Semua Kategori (Mode Atur Urutan)</option>
-            </select>
-            <span id="reorderHintText" class="text-[11px] text-zinc-400">
-              Ketik nomor posisi <strong class="text-brand">#</strong> lalu tekan <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-zinc-200">Enter</kbd>, atau klik panah <strong class="text-white">▲ ▼</strong>.
-            </span>
-          </div>
-
-          <button type="button" onclick="openPortfolioModal()"
-            class="px-4 py-2.5 rounded-xl bg-brand hover:bg-brandHover text-black font-extrabold text-xs transition shrink-0">
-            + Tambah Karya
-          </button>
-        </div>
-
-        <!-- Daftar Karya dengan Kontrol Posisi -->
-        <div id="adminPortfolioList" class="space-y-3"></div>
-      </section>
-
-      <!-- =================================================================== -->
-      <!-- TAB 3: ARTIKEL & CERITA                                             -->
-      <!-- =================================================================== -->
-      <section id="tab-articles" class="tab-panel hidden space-y-5">
-        <div class="flex items-center justify-between bg-card border border-white/10 p-4 rounded-2xl">
-          <div>
-            <h2 class="text-sm font-bold text-white">Daftar Catatan & Artikel</h2>
-            <p class="text-xs text-zinc-400">Cerita di balik sesi foto atau edukasi ringan untuk calon klien.</p>
-          </div>
-          <button type="button" onclick="openArticleModal()"
-            class="px-4 py-2.5 rounded-xl bg-brand hover:bg-brandHover text-black font-extrabold text-xs transition">
-            + Tulis Artikel
-          </button>
-        </div>
-
-        <div id="adminArticlesList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-      </section>
-
-      <!-- =================================================================== -->
-      <!-- TAB 4: TEKS, KONTAK WA & DATABASE SETTING                           -->
-      <!-- =================================================================== -->
-      <section id="tab-settings" class="tab-panel hidden space-y-6">
-        <form id="settingsForm" class="rounded-2xl bg-card border border-white/10 p-6 space-y-5">
-          <div>
-            <h2 class="text-base font-extrabold text-white">A. Identitas & Teks Halaman Utama</h2>
-            <p class="text-xs text-zinc-400">Perubahan langsung disinkronkan ke `index.html` setelah disimpan.</p>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-zinc-300 mb-1.5">Nama Brand</label>
-              <input id="setBrandName" type="text" placeholder="Rohman Capture"
-                class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian border border-white/15 text-sm text-white focus:border-brand focus:outline-none" />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-zinc-300 mb-1.5">Nomor WhatsApp Booking (Format 628xxx)</label>
-              <input id="setWhatsapp" type="text" placeholder="6289640047789"
-                class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian border border-white/15 text-sm text-white focus:border-brand focus:outline-none" />
-            </div>
-            <div class="sm:col-span-2">
-              <label class="block text-xs font-semibold text-zinc-300 mb-1.5">Badge Hero Atas</label>
-              <input id="setHeroBadge" type="text" placeholder="Menciptakan Kebahagiaan • Jakarta & Sekitarnya"
-                class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian border border-white/15 text-sm text-white focus:border-brand focus:outline-none" />
-            </div>
-            <div class="sm:col-span-2">
-              <label class="block text-xs font-semibold text-zinc-300 mb-1.5">Judul Utama Hero</label>
-              <input id="setHeroTitle" type="text"
-                class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian border border-white/15 text-sm text-white focus:border-brand focus:outline-none" />
-            </div>
-            <div class="sm:col-span-2">
-              <label class="block text-xs font-semibold text-zinc-300 mb-1.5">Subjudul Hero</label>
-              <textarea id="setHeroSubtitle" rows="2"
-                class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian border border-white/15 text-sm text-white focus:border-brand focus:outline-none"></textarea>
-            </div>
-          </div>
-
-          <div class="pt-4 border-t border-white/[0.08]">
-            <h2 class="text-base font-extrabold text-white">B. Koneksi Google Apps Script (Web App URL)</h2>
-            <div class="mt-3 flex flex-col sm:flex-row gap-2.5">
-              <input id="setApiUrl" type="url"
-                class="flex-1 px-3.5 py-2.5 rounded-xl bg-obsidian border border-white/15 text-xs font-mono text-zinc-300 focus:border-brand focus:outline-none" />
-              <button type="button" onclick="syncAllToCloud()"
-                class="px-4 py-2.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] text-white font-bold text-xs transition">
-                Tes & Sync Sekarang
-              </button>
-            </div>
-          </div>
-
-          <div class="pt-3 flex justify-end">
-            <button type="submit"
-              class="px-6 py-3 rounded-xl bg-brand hover:bg-brandHover text-black font-extrabold text-xs sm:text-sm transition shadow-lg shadow-brand/20">
-              Simpan Pengaturan & Sync
-            </button>
-          </div>
-        </form>
-      </section>
-
-    </main>
-  </div>
-
-  <!-- ======================================================================= -->
-  <!-- MODAL TAMBAH / EDIT KARYA PORTOFOLIO                                    -->
-  <!-- ======================================================================= -->
-  <div id="portfolioModal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm items-center justify-center p-4 overflow-y-auto">
-    <div class="w-full max-w-xl rounded-2xl bg-card border border-white/15 p-6 shadow-2xl my-8">
-      <div class="flex items-center justify-between pb-3 border-b border-white/10">
-        <h3 id="pfModalTitle" class="text-base font-extrabold text-white">Tambah Karya Portofolio</h3>
-        <button type="button" onclick="closePortfolioModal()" class="text-zinc-400 hover:text-white font-bold">✕</button>
-      </div>
-
-      <form id="portfolioForm" class="mt-4 space-y-3.5">
-        <input type="hidden" id="pfId" />
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-zinc-300 mb-1">Judul Sesi / Karya *</label>
-            <input id="pfTitle" type="text" required placeholder="Contoh: Wisuda UI — Kak Nabila"
-              class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian border border-white/15 text-sm text-white focus:border-brand focus:outline-none" />
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-zinc-300 mb-1">Kategori *</label>
-            <input id="pfCategory" type="text" list="categorySuggestions" required placeholder="Wisuda / Prewedding / Event"
-              class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian border border-white/15 text-sm text-white focus:border-brand focus:outline-none" />
-            <datalist id="categorySuggestions">
-              <option value="Wisuda">
-              <option value="Prewedding">
-              <option value="Engagement">
-              <option value="Maternity">
-              <option value="Event">
-            </datalist>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-zinc-300 mb-1">Nama Klien</label>
-            <input id="pfClient" type="text" placeholder="Opsional"
-              class="w-full px-3.5 py-2 rounded-xl bg-obsidian border border-white/15 text-xs text-white focus:border-brand focus:outline-none" />
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-zinc-300 mb-1">Lokasi Sesi</label>
-            <input id="pfLocation" type="text" placeholder="Jakarta / Depok"
-              class="w-full px-3.5 py-2 rounded-xl bg-obsidian border border-white/15 text-xs text-white focus:border-brand focus:outline-none" />
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-zinc-300 mb-1">Posisi Urut (#)</label>
-            <input id="pfPositionInput" type="number" min="1" placeholder="1"
-              class="w-full px-3.5 py-2 rounded-xl bg-obsidian border border-brand/50 text-xs font-bold text-brand focus:border-brand focus:outline-none" />
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-zinc-300 mb-1">Cerita Singkat / Deskripsi</label>
-          <textarea id="pfDesc" rows="2" placeholder="Cerita singkat di balik pemotretan ini..."
-            class="w-full px-3.5 py-2 rounded-xl bg-obsidian border border-white/15 text-xs text-white focus:border-brand focus:outline-none"></textarea>
-        </div>
-
-        <!-- Upload Foto Multi-Slide -->
-        <div class="rounded-xl bg-obsidian border border-dashed border-white/20 p-4">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <p class="text-xs font-bold text-white">Foto Karya (Bisa Multi-Slide)</p>
-              <p class="text-[11px] text-zinc-400">Otomatis diunggah satu per satu ke folder Drive <span class="text-brand">Website - RC</span>.</p>
-            </div>
-            <label class="cursor-pointer px-3.5 py-2 rounded-xl bg-brand/15 hover:bg-brand/25 border border-brand/40 text-brand font-bold text-xs transition">
-              <span>+ Pilih Foto</span>
-              <input id="pfFileInput" type="file" accept="image/*" multiple class="hidden" />
-            </label>
-          </div>
-          <p id="uploadProgressText" class="hidden text-xs text-brand font-semibold mt-2"></p>
-          <div id="pfSlidesPreview" class="mt-3 grid grid-cols-4 gap-2"></div>
-        </div>
-
-        <div class="pt-2 flex justify-end gap-2.5">
-          <button type="button" onclick="closePortfolioModal()"
-            class="px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-zinc-300 text-xs font-semibold">
-            Batal
-          </button>
-          <button id="pfSaveBtn" type="submit"
-            class="px-5 py-2.5 rounded-xl bg-brand hover:bg-brandHover text-black font-extrabold text-xs transition">
-            Simpan Karya & Sync
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ======================================================================= -->
-  <!-- MODAL TAMBAH / EDIT ARTIKEL                                             -->
-  <!-- ======================================================================= -->
-  <div id="articleModal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm items-center justify-center p-4">
-    <div class="w-full max-w-lg rounded-2xl bg-card border border-white/15 p-6 shadow-2xl">
-      <div class="flex items-center justify-between pb-3 border-b border-white/10">
-        <h3 id="artModalTitle" class="text-base font-extrabold text-white">Tulis Artikel / Catatan</h3>
-        <button type="button" onclick="closeArticleModal()" class="text-zinc-400 hover:text-white font-bold">✕</button>
-      </div>
-
-      <form id="articleForm" class="mt-4 space-y-3.5">
-        <input type="hidden" id="artId" />
-        <div>
-          <label class="block text-xs font-semibold text-zinc-300 mb-1">Judul Artikel *</label>
-          <input id="artTitle" type="text" required placeholder="Tips Pose Wisuda Biar Nggak Kaku"
-            class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian border border-white/15 text-sm text-white focus:border-brand focus:outline-none" />
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-zinc-300 mb-1">Kategori</label>
-            <input id="artCategory" type="text" value="Tips & Edukasi"
-              class="w-full px-3.5 py-2 rounded-xl bg-obsidian border border-white/15 text-xs text-white focus:border-brand focus:outline-none" />
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-zinc-300 mb-1">Tanggal</label>
-            <input id="artDate" type="text" placeholder="November 2026"
-              class="w-full px-3.5 py-2 rounded-xl bg-obsidian border border-white/15 text-xs text-white focus:border-brand focus:outline-none" />
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-zinc-300 mb-1">Isi Ringkas / Cerita *</label>
-          <textarea id="artContent" rows="4" required
-            class="w-full px-3.5 py-2 rounded-xl bg-obsidian border border-white/15 text-xs text-white focus:border-brand focus:outline-none"></textarea>
-        </div>
-        <div class="pt-2 flex justify-end gap-2">
-          <button type="button" onclick="closeArticleModal()" class="px-4 py-2.5 rounded-xl bg-white/[0.06] text-zinc-300 text-xs font-semibold">Batal</button>
-          <button type="submit" class="px-5 py-2.5 rounded-xl bg-brand hover:bg-brandHover text-black font-extrabold text-xs">Simpan & Sync</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    // =========================================================================
-    // KONFIGURASI DEFAULT & STORAGE KEYS
-    // =========================================================================
-    const DEFAULT_CLOUD_URL = 'https://script.google.com/macros/s/AKfycby0_4FBvEm8Fx47qVfdF1BFQ5t0kzifkr3eg_gKiVMU8QNbvdaE4QtAzwowSlkLAxwGgw/exec';
-    const STORAGE_KEYS = {
-      PIN: 'rc_admin_pin_v2',
-      UNLOCKED: 'rc_admin_unlocked_v2',
-      API_URL: 'rc_cloud_api_url_v2',
-      DATA: 'rc_studio_data_v2'
-    };
-
-    let state = {
-      settings: {
-        brandName: 'Rohman Capture',
-        whatsapp: '6289640047789',
-        heroBadge: 'Menciptakan Kebahagiaan • Jakarta & Sekitarnya',
-        heroTitle: 'Mengabadikan Momen Jujur yang <span class="text-brand font-serif italic font-semibold">Bercerita</span> Sepanjang Masa.',
-        heroSubtitle: 'Spesialis fotografi Wisuda, Prewedding, Engagement, Maternity, dan Dokumentasi Acara dengan arahan pose natural tanpa canggung.'
-      },
-      portfolioItems: [],
-      articles: []
-    };
-
-    let orderBackupSnapshot = null;
-    let isOrderDirty = false;
-    let modalSlides = [];
-
-    function getApiUrl() {
-      return localStorage.getItem(STORAGE_KEYS.API_URL) || DEFAULT_CLOUD_URL;
-    }
-
-    function getActivePin() {
-      return localStorage.getItem(STORAGE_KEYS.PIN) || '123456';
-    }
-
-    function showToast(title, msg, type = 'brand') {
-      const box = document.getElementById('toastBox');
-      const dot = document.getElementById('toastDot');
-      document.getElementById('toastTitle').textContent = title;
-      document.getElementById('toastMsg').textContent = msg;
-
-      dot.className = 'mt-1 w-2.5 h-2.5 rounded-full shrink-0 ' + (
-        type === 'error' ? 'bg-red-500' : (type === 'success' ? 'bg-emerald-400' : 'bg-brand')
-      );
-
-      box.classList.remove('hidden');
-      clearTimeout(window._toastTimer);
-      window._toastTimer = setTimeout(() => box.classList.add('hidden'), 4000);
-    }
-
-    function setSyncStatus(status, label) {
-      const dot = document.getElementById('syncDot');
-      const text = document.getElementById('syncStatusText');
-      text.textContent = label;
-      dot.className = 'w-2 h-2 rounded-full ' + (
-        status === 'ok' ? 'bg-emerald-400' : (status === 'syncing' ? 'bg-brand animate-ping' : 'bg-red-400')
-      );
-    }
-
-    function resolveImageUrl(url) {
-      if (!url) return 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=600&q=80';
-      const str = String(url).trim();
-      const m = str.match(/\/d\/([a-zA-Z0-9_-]+)/) || str.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-      if (m && m[1]) return `https://lh3.googleusercontent.com/d/${m[1]}=w800`;
-      return str;
-    }
-
-    // =========================================================================
-    // 1. AUTENTIKASI PIN & RECOVERY
-    // =========================================================================
-    document.getElementById('loginForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const input = document.getElementById('pinInput').value.trim();
-      const errEl = document.getElementById('loginError');
-
-      if (input === getActivePin() || input === '123456') {
-        if (!localStorage.getItem(STORAGE_KEYS.PIN)) {
-          localStorage.setItem(STORAGE_KEYS.PIN, input);
-        }
-        sessionStorage.setItem(STORAGE_KEYS.UNLOCKED, '1');
-        errEl.classList.add('hidden');
-        unlockDashboard();
-      } else {
-        errEl.textContent = 'PIN salah. Coba lagi atau klik "Lupa PIN?" di bawah.';
-        errEl.classList.remove('hidden');
-      }
-    });
-
-    document.getElementById('showRecoveryBtn').addEventListener('click', () => {
-      document.getElementById('loginView').classList.add('hidden');
-      document.getElementById('recoveryView').classList.remove('hidden');
-    });
-
-    document.getElementById('backToLoginBtn').addEventListener('click', () => {
-      document.getElementById('recoveryView').classList.add('hidden');
-      document.getElementById('loginView').classList.remove('hidden');
-    });
-
-    document.getElementById('recoveryForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const key = document.getElementById('recKeyInput').value.trim();
-      const p1 = document.getElementById('recNewPin').value.trim();
-      const p2 = document.getElementById('recConfirmPin').value.trim();
-      const errEl = document.getElementById('recError');
-      const btn = document.getElementById('recSubmitBtn');
-
-      if (!/^\d{6}$/.test(p1)) {
-        errEl.textContent = 'PIN baru harus 6 digit angka.';
-        errEl.classList.remove('hidden');
-        return;
-      }
-      if (p1 !== p2) {
-        errEl.textContent = 'Konfirmasi PIN tidak cocok.';
-        errEl.classList.remove('hidden');
-        return;
-      }
-
-      btn.disabled = true;
-      btn.textContent = 'Menyelaraskan PIN Server...';
-      errEl.classList.add('hidden');
-
-      try {
-        const res = await fetch(getApiUrl(), {
-          method: 'POST',
-          body: JSON.stringify({ action: 'recoverPin', recoveryKey: key, newPin: p1 })
-        });
-        const json = await res.json();
-        if (json.status === 'success') {
-          localStorage.setItem(STORAGE_KEYS.PIN, p1);
-          sessionStorage.setItem(STORAGE_KEYS.UNLOCKED, '1');
-          showToast('PIN Dipulihkan', 'PIN lokal & server Apps Script sudah sama.', 'success');
-          unlockDashboard();
-        } else {
-          errEl.textContent = json.message || 'Kode pemulihan tidak cocok.';
-          errEl.classList.remove('hidden');
-        }
-      } catch (err) {
-        errEl.textContent = 'Gagal menghubungi server Apps Script: ' + err.message;
-        errEl.classList.remove('hidden');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Reset PIN & Masuk';
-      }
-    });
-
-    document.getElementById('lockPortalBtn').addEventListener('click', () => {
-      sessionStorage.removeItem(STORAGE_KEYS.UNLOCKED);
-      document.getElementById('adminApp').classList.add('hidden');
-      document.getElementById('lockScreen').classList.remove('hidden');
-      document.getElementById('pinInput').value = '';
-    });
-
-    function unlockDashboard() {
-      document.getElementById('lockScreen').classList.add('hidden');
-      document.getElementById('adminApp').classList.remove('hidden');
-      loadFromCloud();
-    }
-
-    // =========================================================================
-    // 2. NAVIGASI TAB
-    // =========================================================================
-    const TAB_META = {
-      overview: ['Ringkasan Dashboard', 'Pantau statistik karya dan akses cepat pengelolaan studio.'],
-      portfolio: ['Portofolio & Urutan Posisi', 'Atur posisi #1..N untuk tampilan grid 3×3 di halaman publik.'],
-      articles: ['Artikel & Cerita Sesi', 'Tulis catatan di balik layar dan tips persiapan pemotretan.'],
-      settings: ['Teks & Pengaturan Cloud', 'Ubah copywriting hero, nomor WhatsApp, dan endpoint database.']
-    };
-
-    function switchTab(tabName) {
-      document.querySelectorAll('.nav-tab').forEach(btn => {
-        const active = btn.getAttribute('data-tab') === tabName;
-        btn.className = active
-          ? 'nav-tab active flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-brand text-black transition'
-          : 'nav-tab flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-zinc-300 hover:bg-white/[0.06] transition';
-      });
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
-      document.getElementById('tab-' + tabName).classList.remove('hidden');
-      document.getElementById('pageTitle').textContent = TAB_META[tabName][0];
-      document.getElementById('pageSubtitle').textContent = TAB_META[tabName][1];
-    }
-
-    document.querySelectorAll('.nav-tab').forEach(btn => {
-      btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
-    });
-
-    // =========================================================================
-    // 3. CLOUD FETCH & SYNC
-    // =========================================================================
-    async function loadFromCloud() {
-      setSyncStatus('syncing', 'Memuat Cloud...');
-      try {
-        const res = await fetch(`${getApiUrl()}?t=${Date.now()}`);
-        const data = await res.json();
-        if (data && data.status === 'success') {
-          if (data.settings && Object.keys(data.settings).length) {
-            state.settings = { ...state.settings, ...data.settings };
-          }
-          if (Array.isArray(data.portfolioItems)) {
-            state.portfolioItems = data.portfolioItems;
-          }
-          if (Array.isArray(data.articles)) {
-            state.articles = data.articles;
-          }
-          localStorage.setItem(STORAGE_KEYS.DATA, JSON.stringify(state));
-          setSyncStatus('ok', 'Cloud Sync Aktif');
-        } else {
-          throw new Error(data.message || 'Respon tidak valid');
-        }
-      } catch (err) {
-        const cached = localStorage.getItem(STORAGE_KEYS.DATA);
-        if (cached) state = JSON.parse(cached);
-        setSyncStatus('err', 'Mode Offline / Gagal Fetch');
-      }
-      renderAll();
-    }
-
-    async function syncAllToCloud(customAction = 'syncAll') {
-      setSyncStatus('syncing', 'Menyinkronkan...');
-      localStorage.setItem(STORAGE_KEYS.DATA, JSON.stringify(state));
-
-      try {
-        const payload = {
-          action: customAction,
-          pin: getActivePin(),
-          settings: state.settings,
-          portfolioItems: state.portfolioItems,
-          articles: state.articles
-        };
-
-        const res = await fetch(getApiUrl(), {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
-        const json = await res.json();
-
-        if (json.status === 'success') {
-          setSyncStatus('ok', 'Cloud Sync Aktif');
-          isOrderDirty = false;
-          orderBackupSnapshot = null;
-          document.getElementById('orderDirtyBanner').classList.add('hidden');
-          showToast('Sinkronisasi Berhasil', json.message || 'Data & urutan terbaru sudah live di Google Sheets.', 'success');
-          renderAll();
-        } else {
-          setSyncStatus('err', 'Gagal Sync');
-          showToast('Gagal Sinkronisasi', json.message || 'Periksa kecocokan PIN server.', 'error');
-        }
-      } catch (err) {
-        setSyncStatus('err', 'Error Jaringan');
-        showToast('Koneksi Gagal', err.message, 'error');
-      }
-    }
-
-    document.getElementById('topSyncBtn').addEventListener('click', () => syncAllToCloud('syncAll'));
-
-    // =========================================================================
-    // 4. LOGIKA PENGATURAN POSISI KARYA (PANAH ATAS/BAWAH + #ANGKA)
-    // =========================================================================
-    function markOrderDirty() {
-      if (!isOrderDirty) {
-        orderBackupSnapshot = JSON.parse(JSON.stringify(state.portfolioItems));
-        isOrderDirty = true;
-      }
-      document.getElementById('orderDirtyBanner').classList.remove('hidden');
-    }
-
-    // Geser 1 langkah naik (-1) atau turun (+1)
-    window.movePortfolioStep = function(index, delta) {
-      const targetIndex = index + delta;
-      if (targetIndex < 0 || targetIndex >= state.portfolioItems.length) return;
-
-      markOrderDirty();
-      const [moved] = state.portfolioItems.splice(index, 1);
-      state.portfolioItems.splice(targetIndex, 0, moved);
-      renderPortfolioList();
-      renderOverview();
-    };
-
-    // Pindah langsung ke nomor posisi tertentu (1-based index dari input #angka)
-    window.movePortfolioToNumber = function(currentIndex, rawValue) {
-      const total = state.portfolioItems.length;
-      let targetPos = parseInt(rawValue, 10);
-
-      if (isNaN(targetPos)) {
-        renderPortfolioList();
-        return;
-      }
-      if (targetPos < 1) targetPos = 1;
-      if (targetPos > total) targetPos = total;
-
-      const targetIndex = targetPos - 1;
-      if (targetIndex === currentIndex) {
-        renderPortfolioList();
-        return;
-      }
-
-      markOrderDirty();
-      const [moved] = state.portfolioItems.splice(currentIndex, 1);
-      state.portfolioItems.splice(targetIndex, 0, moved);
-      renderPortfolioList();
-      renderOverview();
-      showToast('Posisi Dipindahkan', `"${moved.title}" dipindah ke posisi #${targetPos}. Klik Simpan Urutan untuk menerapkan ke web.`, 'brand');
-    };
-
-    document.getElementById('saveOrderBtn').addEventListener('click', () => {
-      syncAllToCloud('reorderPortfolio');
-    });
-
-    document.getElementById('discardOrderBtn').addEventListener('click', () => {
-      if (orderBackupSnapshot) {
-        state.portfolioItems = orderBackupSnapshot;
-      }
-      isOrderDirty = false;
-      orderBackupSnapshot = null;
-      document.getElementById('orderDirtyBanner').classList.add('hidden');
-      renderAll();
-      showToast('Urutan Dibatalkan', 'Posisi karya dikembalikan seperti semula.', 'brand');
-    });
-
-    // =========================================================================
-    // 5. RENDER UI (OVERVIEW, PORTFOLIO LIST, ARTICLES, SETTINGS)
-    // =========================================================================
-    function renderAll() {
-      renderOverview();
-      populateCategoryFilter();
-      renderPortfolioList();
-      renderArticlesList();
-      fillSettingsForm();
-    }
-
-    function renderOverview() {
-      const items = state.portfolioItems;
-      const cats = new Set(items.map(i => (i.category || '').trim()).filter(Boolean));
-      document.getElementById('statTotalPortfolio').textContent = items.length;
-      document.getElementById('statTotalCategories').textContent = cats.size;
-      document.getElementById('statTotalArticles').textContent = state.articles.length;
-      document.getElementById('statTopWork').textContent = items[0] ? `#1 ${items[0].title}` : 'Belum ada karya';
-    }
-
-    function populateCategoryFilter() {
-      const select = document.getElementById('adminCategoryFilter');
-      const currentVal = select.value || 'Semua';
-      const cats = ['Semua'];
-      state.portfolioItems.forEach(item => {
-        const c = (item.category || '').trim();
-        if (c && !cats.includes(c)) cats.push(c);
-      });
-
-      select.innerHTML = cats.map(c =>
-        `<option value="${c}">${c === 'Semua' ? 'Semua Kategori (Mode Atur Urutan)' : c}</option>`
-      ).join('');
-      select.value = cats.includes(currentVal) ? currentVal : 'Semua';
-    }
-
-    document.getElementById('adminCategoryFilter').addEventListener('change', renderPortfolioList);
-
-    function renderPortfolioList() {
-      const listEl = document.getElementById('adminPortfolioList');
-      const filterCat = document.getElementById('adminCategoryFilter').value;
-      const isGlobalMode = filterCat === 'Semua';
-
-      document.getElementById('reorderHintText').innerHTML = isGlobalMode
-        ? 'Ketik nomor posisi <strong class="text-brand">#</strong> lalu tekan <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-zinc-200">Enter</kbd>, atau klik panah <strong class="text-white">▲ ▼</strong>.'
-        : '<span class="text-amber-400">Pilih "Semua Kategori" untuk mengubah nomor urut global (#1..N).</span>';
-
-      const itemsWithIndex = state.portfolioItems
-        .map((item, globalIdx) => ({ item, globalIdx }))
-        .filter(entry => isGlobalMode || (entry.item.category || '').trim() === filterCat);
-
-      if (!itemsWithIndex.length) {
-        listEl.innerHTML = `
-          <div class="rounded-2xl bg-card border border-white/10 p-10 text-center">
-            <p class="text-sm font-bold text-zinc-300">Belum ada karya portofolio.</p>
-            <p class="text-xs text-zinc-500 mt-1">Klik "+ Tambah Karya" untuk mulai mengisi galeri.</p>
-          </div>
-        `;
-        return;
-      }
-
-      const totalGlobal = state.portfolioItems.length;
-
-      listEl.innerHTML = itemsWithIndex.map(({ item, globalIdx }) => {
-        const slides = Array.isArray(item.images) && item.images.length ? item.images : [item.imageUrl];
-        const thumb = resolveImageUrl(slides[0]);
-        const posNumber = globalIdx + 1;
-        const isTop9 = posNumber <= 9; // Masuk 3x3 halaman awal desktop
-
-        return `
-          <div class="rounded-2xl bg-card border ${isTop9 ? 'border-white/15' : 'border-white/[0.07]'} p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-brand/40 transition">
-            <div class="flex items-center gap-3.5 min-w-0">
-
-              <!-- Kontrol Posisi: Panah Atas/Bawah + Input #Angka -->
-              <div class="flex items-center gap-1.5 shrink-0 bg-obsidian border border-white/10 rounded-xl p-1.5">
-                <div class="flex flex-col gap-0.5">
-                  <button type="button"
-                    ${!isGlobalMode || globalIdx === 0 ? 'disabled' : ''}
-                    onclick="movePortfolioStep(${globalIdx}, -1)"
-                    title="Geser Naik"
-                    class="w-6 h-5 rounded bg-white/[0.06] hover:bg-brand hover:text-black disabled:opacity-25 disabled:pointer-events-none text-[10px] font-bold flex items-center justify-center transition">
-                    ▲
-                  </button>
-                  <button type="button"
-                    ${!isGlobalMode || globalIdx === totalGlobal - 1 ? 'disabled' : ''}
-                    onclick="movePortfolioStep(${globalIdx}, 1)"
-                    title="Geser Turun"
-                    class="w-6 h-5 rounded bg-white/[0.06] hover:bg-brand hover:text-black disabled:opacity-25 disabled:pointer-events-none text-[10px] font-bold flex items-center justify-center transition">
-                    ▼
-                  </button>
-                </div>
-
-                <div class="flex items-center pl-1 pr-1.5">
-                  <span class="text-xs font-extrabold text-brand mr-0.5">#</span>
-                  <input type="number"
-                    min="1"
-                    max="${totalGlobal}"
-                    value="${posNumber}"
-                    ${!isGlobalMode ? 'disabled' : ''}
-                    onchange="movePortfolioToNumber(${globalIdx}, this.value)"
-                    onkeydown="if(event.key==='Enter'){ event.preventDefault(); this.blur(); }"
-                    title="Ketik nomor urutan lalu tekan Enter"
-                    class="w-10 bg-transparent text-center text-sm font-extrabold text-white focus:outline-none focus:bg-white/10 rounded py-1" />
-                </div>
-              </div>
-
-              <!-- Thumbnail -->
-              <div class="w-14 h-16 sm:w-16 sm:h-20 rounded-xl overflow-hidden bg-zinc-900 shrink-0 relative border border-white/10">
-                <img src="${thumb}" alt="" class="w-full h-full object-cover" />
-                ${slides.length > 1 ? `<span class="absolute bottom-1 right-1 px-1.5 py-0.2 rounded bg-black/80 text-[9px] font-bold text-white">${slides.length}x</span>` : ''}
-              </div>
-
-              <!-- Info Karya -->
-              <div class="min-w-0">
-                <div class="flex flex-wrap items-center gap-2">
-                  <span class="px-2 py-0.5 rounded-md bg-brand/15 text-brand text-[10px] font-bold uppercase">${item.category || 'Portofolio'}</span>
-                  ${isTop9 ? '<span class="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 text-[10px] font-semibold">Grid Awal 3×3</span>' : ''}
-                </div>
-                <h3 class="text-sm sm:text-base font-bold text-white truncate mt-1">${item.title || 'Untitled'}</h3>
-                <p class="text-xs text-zinc-400 truncate">${[item.client, item.location].filter(Boolean).join(' • ') || 'Rohman Capture'}</p>
-              </div>
-            </div>
-
-            <!-- Tombol Edit & Hapus -->
-            <div class="flex items-center justify-end gap-2 shrink-0 border-t sm:border-t-0 pt-2.5 sm:pt-0 border-white/[0.06]">
-              <button type="button" onclick="openPortfolioModal(${globalIdx})"
-                class="px-3.5 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.14] text-xs font-semibold text-white transition">
-                Edit
-              </button>
-              <button type="button" onclick="deletePortfolio(${globalIdx})"
-                class="px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-xs font-semibold text-red-300 transition">
-                Hapus
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // =========================================================================
-    // 6. MODAL TAMBAH / EDIT PORTOFOLIO + UPLOAD MULTI-SLIDE
-    // =========================================================================
-    window.openPortfolioModal = function(editIndex = null) {
-      const modal = document.getElementById('portfolioModal');
-      const form = document.getElementById('portfolioForm');
-      form.reset();
-      modalSlides = [];
-
-      if (editIndex !== null && state.portfolioItems[editIndex]) {
-        const item = state.portfolioItems[editIndex];
-        document.getElementById('pfModalTitle').textContent = 'Edit Karya Portofolio';
-        document.getElementById('pfId').value = editIndex;
-        document.getElementById('pfTitle').value = item.title || '';
-        document.getElementById('pfCategory').value = item.category || '';
-        document.getElementById('pfClient').value = item.client || '';
-        document.getElementById('pfLocation').value = item.location || '';
-        document.getElementById('pfDesc').value = item.description || '';
-        document.getElementById('pfPositionInput').value = editIndex + 1;
-        modalSlides = Array.isArray(item.images) && item.images.length ? [...item.images] : (item.imageUrl ? [item.imageUrl] : []);
-      } else {
-        document.getElementById('pfModalTitle').textContent = 'Tambah Karya Portofolio Baru';
-        document.getElementById('pfId').value = '';
-        document.getElementById('pfPositionInput').value = 1; // Default karya baru langsung posisi #1
-      }
-
-      renderModalSlides();
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    };
-
-    window.closePortfolioModal = function() {
-      const modal = document.getElementById('portfolioModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    };
-
-    function renderModalSlides() {
-      const container = document.getElementById('pfSlidesPreview');
-      container.innerHTML = modalSlides.map((url, idx) => `
-        <div class="relative aspect-square rounded-lg overflow-hidden border border-white/15 bg-zinc-900 group">
-          <img src="${resolveImageUrl(url)}" class="w-full h-full object-cover" />
-          <span class="absolute top-1 left-1 px-1.5 rounded bg-black/75 text-[9px] font-bold text-white">#${idx + 1}</span>
-          <button type="button" onclick="removeModalSlide(${idx})"
-            class="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center">✕</button>
-        </div>
-      `).join('');
-    }
-
-    window.removeModalSlide = function(idx) {
-      modalSlides.splice(idx, 1);
-      renderModalSlides();
-    };
-
-    // Upload satu per satu anti-timeout
-    document.getElementById('pfFileInput').addEventListener('change', async (e) => {
-      const files = Array.from(e.target.files || []);
-      if (!files.length) return;
-
-      const prog = document.getElementById('uploadProgressText');
-      const saveBtn = document.getElementById('pfSaveBtn');
-      prog.classList.remove('hidden');
-      saveBtn.disabled = true;
-
-      for (let i = 0; i < files.length; i++) {
-        prog.textContent = `Mengunggah foto ${i + 1} dari ${files.length} ke Google Drive...`;
-        try {
-          const base64 = await fileToCompressedBase64(files[i], 1400, 0.85);
-          const res = await fetch(getApiUrl(), {
-            method: 'POST',
-            body: JSON.stringify({
-              action: 'uploadImage',
-              pin: getActivePin(),
-              fileName: `RC_${Date.now()}_${i + 1}.jpg`,
-              mimeType: 'image/jpeg',
-              base64
-            })
-          });
-          const json = await res.json();
-          if (json.status === 'success' && json.imageUrl) {
-            modalSlides.push(json.imageUrl);
-            renderModalSlides();
-          } else {
-            showToast('Gagal Upload Slide', json.message || 'Cek koneksi server.', 'error');
-          }
-        } catch (err) {
-          showToast('Error Upload', err.message, 'error');
-        }
-      }
-
-      prog.textContent = `Selesai! ${files.length} foto berhasil masuk.`;
-      saveBtn.disabled = false;
-      e.target.value = '';
-    });
-
-    function fileToCompressedBase64(file, maxDim = 1400, quality = 0.85) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          const img = new Image();
-          img.onload = () => {
-            let w = img.width;
-            let h = img.height;
-            if (w > maxDim || h > maxDim) {
-              if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
-              else { w = Math.round(w * maxDim / h); h = maxDim; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal — Rohman Capture | Fotografer Jakarta Timur</title>
+    <meta name="description" content="Dashboard Admin terpisah untuk mengelola konten teks, profil, portofolio, dan pengaturan website Rohman Capture.">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Quicksand & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        rcBlack: '#010101',
+                        rcSurface: '#0B0B0B',
+                        rcCard: '#121212',
+                        rcBorder: 'rgba(255, 255, 255, 0.08)',
+                        rcBorderHover: 'rgba(255, 255, 255, 0.16)',
+                        rcOrange: 'rgb(var(--accent-rgb) / <alpha-value>)',
+                        rcOrangeHover: 'var(--accent-hover)',
+                        rcOrangeLight: 'rgb(var(--accent-rgb) / 0.88)',
+                        rcText: '#F8FAFC',
+                        rcMuted: '#A1A1AA'
+                    },
+                    fontFamily: {
+                        heading: ['"Quicksand"', 'sans-serif'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        soft: ['"Quicksand"', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'orange-glow': '0 8px 28px -4px rgb(var(--accent-rgb) / 0.36)',
+                        'orange-subtle': '0 6px 20px -6px rgb(var(--accent-rgb) / 0.22)',
+                        'panel-dark': '0 20px 45px -15px rgba(0, 0, 0, 0.92)'
+                    }
+                }
             }
-            const canvas = document.createElement('canvas');
-            canvas.width = w;
-            canvas.height = h;
-            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', quality));
-          };
-          img.onerror = reject;
-          img.src = ev.target.result;
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
+        }
+    </script>
 
-    document.getElementById('portfolioForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!modalSlides.length) {
-        showToast('Foto Belum Dipilih', 'Unggah minimal 1 foto karya terlebih dahulu.', 'error');
-        return;
-      }
+    <style>
+        :root {
+            --accent: #F38B1C;
+            --accent-hover: #E07A0E;
+            --accent-rgb: 243 139 28;
+        }
 
-      const editRaw = document.getElementById('pfId').value;
-      const desiredPos = Math.max(1, parseInt(document.getElementById('pfPositionInput').value, 10) || 1);
+        body {
+            background-color: #010101;
+            color: #F8FAFC;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
 
-      const entry = {
-        id: editRaw !== '' && state.portfolioItems[Number(editRaw)]
-          ? state.portfolioItems[Number(editRaw)].id
-          : ('pf_' + Date.now()),
-        title: document.getElementById('pfTitle').value.trim(),
-        category: document.getElementById('pfCategory').value.trim() || 'Wisuda',
-        client: document.getElementById('pfClient').value.trim(),
-        location: document.getElementById('pfLocation').value.trim(),
-        description: document.getElementById('pfDesc').value.trim(),
-        imageUrl: modalSlides[0],
-        images: [...modalSlides],
-        updatedAt: new Date().toISOString()
-      };
+        h1, h2, h3, h4, .font-soft, .pill-btn, .sidebar-item, .filter-pill, .setting-tab-pill {
+            font-family: 'Quicksand', sans-serif;
+        }
 
-      if (editRaw !== '') {
-        state.portfolioItems.splice(Number(editRaw), 1);
-      }
+        /* Ambient Background Pattern on #010101 */
+        .bg-admin-grid {
+            background-color: #010101;
+            background-image:
+                radial-gradient(circle at 12% 12%, rgb(var(--accent-rgb) / 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 88% 85%, rgb(var(--accent-rgb) / 0.06) 0%, transparent 45%),
+                linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+        }
 
-      const insertIdx = Math.min(desiredPos - 1, state.portfolioItems.length);
-      state.portfolioItems.splice(insertIdx, 0, entry);
+        /* Logo Glow */
+        .logo-glow {
+            filter: drop-shadow(0 0 12px rgb(var(--accent-rgb) / 0.38));
+        }
 
-      closePortfolioModal();
-      await syncAllToCloud('syncAll');
-    });
+        .brand-svg-fill {
+            fill: var(--accent);
+            transition: fill 0.25s ease;
+        }
 
-    window.deletePortfolio = async function(index) {
-      const item = state.portfolioItems[index];
-      if (!item) return;
-      if (!confirm(`Hapus karya "${item.title}" dari portofolio?`)) return;
-      state.portfolioItems.splice(index, 1);
-      await syncAllToCloud('syncAll');
-    };
+        /* Solid Vibrant Brand Orange Button */
+        .btn-orange-solid {
+            background-color: var(--accent, #F38B1C) !important;
+            color: #010101 !important;
+            box-shadow: 0 8px 28px -4px rgb(var(--accent-rgb) / 0.45);
+        }
+        .btn-orange-solid:hover {
+            background-color: var(--accent-hover, #FF9F38) !important;
+            filter: brightness(1.06);
+            transform: translateY(-1px);
+        }
 
-    // =========================================================================
-    // 7. ARTIKEL & SETTINGS
-    // =========================================================================
-    function renderArticlesList() {
-      const container = document.getElementById('adminArticlesList');
-      if (!state.articles.length) {
-        container.innerHTML = `<div class="md:col-span-2 rounded-2xl bg-card border border-white/10 p-8 text-center text-xs text-zinc-400">Belum ada artikel yang ditulis.</div>`;
-        return;
-      }
+        /* Smooth Button & Navigation Transitions */
+        .pill-btn, .sidebar-item, .filter-pill, .setting-tab-pill {
+            transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+        }
 
-      container.innerHTML = state.articles.map((art, idx) => `
-        <div class="rounded-2xl bg-card border border-white/10 p-5 flex flex-col justify-between gap-4">
-          <div>
-            <span class="text-[10px] font-bold uppercase tracking-wider text-brand">${art.category || 'Story'} • ${art.date || ''}</span>
-            <h3 class="text-base font-bold text-white mt-1">${art.title}</h3>
-            <p class="text-xs text-zinc-400 mt-2 line-clamp-3">${art.content || art.excerpt || ''}</p>
-          </div>
-          <div class="flex justify-end gap-2 pt-3 border-t border-white/[0.06]">
-            <button type="button" onclick="openArticleModal(${idx})" class="px-3 py-1.5 rounded-lg bg-white/[0.06] text-xs font-semibold text-white">Edit</button>
-            <button type="button" onclick="deleteArticle(${idx})" class="px-3 py-1.5 rounded-lg bg-red-500/10 text-xs font-semibold text-red-300">Hapus</button>
-          </div>
+        .sidebar-item.active {
+            background-color: var(--accent, #F38B1C) !important;
+            color: #010101 !important;
+            font-weight: 700;
+            box-shadow: 0 8px 24px -4px rgb(var(--accent-rgb) / 0.42);
+        }
+
+        .sidebar-item.active i {
+            color: #010101 !important;
+        }
+
+        .filter-pill.active, .setting-tab-pill.active {
+            background-color: var(--accent, #F38B1C) !important;
+            color: #010101 !important;
+            font-weight: 700;
+            border-color: var(--accent, #F38B1C) !important;
+            box-shadow: 0 6px 20px -4px rgb(var(--accent-rgb) / 0.4);
+        }
+
+        /* Toggle Switch Styling */
+        .toggle-checkbox:checked {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+        .toggle-checkbox:checked + .toggle-dot {
+            transform: translateX(1.25rem);
+            background-color: #010101;
+        }
+
+        /* Hide spin arrows on position number input */
+        input.pos-number-input::-webkit-inner-spin-button,
+        input.pos-number-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input.pos-number-input {
+            -moz-appearance: textfield;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #010101;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #222222;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        /* Section Fade In */
+        @keyframes sectionEnter {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .section-animate {
+            animation: sectionEnter 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        /* Error Shake Animation for Wrong PIN */
+        @keyframes shakeError {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        .animate-shake {
+            animation: shakeError 0.38s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-rcBlack text-rcText antialiased selection:bg-rcOrange selection:text-rcBlack">
+
+    <!-- =========================================================
+         1. PIN LOCK SCREEN (SECURITY GATE OVERLAY)
+    ========================================================== -->
+    <div id="lockScreenOverlay" class="fixed inset-0 z-50 bg-admin-grid flex items-center justify-center p-4 sm:p-6 transition-opacity duration-300">
+        <div id="lockCardContainer" class="w-full max-w-md bg-rcSurface border border-rcBorderHover rounded-3xl p-7 sm:p-9 shadow-panel-dark relative overflow-hidden">
+            <!-- Top Brand Accent Line -->
+            <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-rcOrange to-transparent"></div>
+
+            <!-- Brand Header -->
+            <div class="flex flex-col items-center text-center space-y-4 mb-7">
+                <div class="bg-rcCard border border-rcOrange/35 px-4 py-3 rounded-2xl shadow-orange-subtle flex items-center justify-center min-h-[64px]">
+                    <div class="brand-logo-slot flex items-center justify-center">
+                        <svg class="h-10 w-auto logo-glow" viewBox="0 0 185 88" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Logo Rohman Capture">
+                            <path class="brand-svg-fill" d="M22 14 H78 C108 14 122 28 119 48 C116 63 125 69 144 69 H180 L165 85 H136 C97 85 80 66 84 42 C86 31 78 30 62 30 H8 L22 14 Z"/>
+                            <circle class="brand-svg-fill" cx="148" cy="44" r="10.5"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rcOrange/15 border border-rcOrange/40 text-rcOrangeLight text-xs font-bold tracking-wide">
+                        <span class="w-2 h-2 rounded-full bg-rcOrange animate-pulse"></span>
+                        ADMIN PORTAL
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">ROHMAN CAPTURE</h1>
+                    <p id="lockScreenGreeting" class="text-xs font-soft font-bold text-rcOrangeLight">
+                        Selamat Datang, Rohman
+                    </p>
+                    <p class="text-xs sm:text-sm text-rcMuted font-sans">
+                        Masukkan 6-digit PIN Admin untuk mengelola teks, portofolio & pengaturan website.
+                    </p>
+                </div>
+            </div>
+
+            <!-- PIN Form -->
+            <form id="unlockForm" onsubmit="handleUnlock(event)" class="space-y-4">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label for="adminPinInput" class="block text-xs font-soft font-bold text-zinc-300">
+                            PIN Keamanan Admin (6 Digit)
+                        </label>
+                        <button
+                            type="button"
+                            onclick="openForgotPinModal()"
+                            class="text-xs font-soft font-bold text-rcOrange hover:text-rcOrangeLight hover:underline transition cursor-pointer"
+                        >
+                            Lupa PIN?
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-4 flex items-center text-rcOrange">
+                            <i class="fa-solid fa-lock text-sm"></i>
+                        </span>
+                        <input
+                            type="password"
+                            id="adminPinInput"
+                            maxlength="6"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            autocomplete="current-password"
+                            placeholder="••••••"
+                            class="w-full pl-11 pr-12 py-3.5 rounded-2xl bg-rcBlack border border-rcBorderHover text-white placeholder-zinc-600 text-base font-bold focus:outline-none focus:border-rcOrange transition tracking-[0.35em]"
+                            required
+                        >
+                        <button
+                            type="button"
+                            onclick="togglePinVisibility()"
+                            class="absolute inset-y-0 right-4 flex items-center text-zinc-400 hover:text-rcOrange transition cursor-pointer"
+                            aria-label="Tampilkan atau Sembunyikan PIN"
+                        >
+                            <i id="pinEyeIcon" class="fa-regular fa-eye text-sm"></i>
+                        </button>
+                    </div>
+                    <p id="pinErrorMsg" class="hidden text-xs text-red-400 mt-2 flex items-center gap-1.5 font-sans">
+                        <i class="fa-solid fa-circle-exclamation shrink-0"></i>
+                        <span id="pinErrorText">PIN salah. Periksa kembali 6-digit PIN keamanan Anda.</span>
+                    </p>
+                    <div id="pinLockoutBanner" class="hidden mt-3 p-3 rounded-2xl bg-red-500/10 border border-red-500/35 text-xs text-red-300 font-sans flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved text-red-400 shrink-0"></i>
+                        <span id="pinLockoutText">Terlalu banyak percobaan gagal. Silakan tunggu 60 detik.</span>
+                    </div>
+                </div>
+
+                <button
+                    type="submit"
+                    id="unlockSubmitBtn"
+                    onclick="handleUnlock(event)"
+                    style="background-color: var(--accent, #F38B1C); color: #010101;"
+                    class="btn-orange-solid pill-btn w-full py-3.5 px-6 rounded-full bg-[#F38B1C] hover:bg-[#FF9F38] text-[#010101] font-bold text-sm shadow-orange-glow flex items-center justify-center gap-2 cursor-pointer"
+                >
+                    <i class="fa-solid fa-unlock-keyhole"></i>
+                    <span>Buka Dashboard Admin</span>
+                </button>
+            </form>
+
+            <div class="mt-6 pt-5 border-t border-rcBorder flex items-center justify-between text-[11px] text-zinc-500 font-soft">
+                <span><i class="fa-solid fa-shield-halved text-rcOrange/80 mr-1"></i>Sistem Terproteksi</span>
+                <button
+                    type="button"
+                    onclick="openForgotPinModal()"
+                    class="text-zinc-400 hover:text-rcOrange font-bold transition cursor-pointer"
+                >
+                    Pulihkan Akses →
+                </button>
+            </div>
         </div>
-      `).join('');
-    }
+    </div>
 
-    window.openArticleModal = function(idx = null) {
-      const modal = document.getElementById('articleModal');
-      document.getElementById('articleForm').reset();
-      if (idx !== null && state.articles[idx]) {
-        const a = state.articles[idx];
-        document.getElementById('artModalTitle').textContent = 'Edit Artikel';
-        document.getElementById('artId').value = idx;
-        document.getElementById('artTitle').value = a.title || '';
-        document.getElementById('artCategory').value = a.category || 'Tips & Edukasi';
-        document.getElementById('artDate').value = a.date || '';
-        document.getElementById('artContent').value = a.content || a.excerpt || '';
-      } else {
-        document.getElementById('artModalTitle').textContent = 'Tulis Artikel Baru';
-        document.getElementById('artId').value = '';
-      }
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    };
+    <!-- =========================================================
+         MODAL LUPA PIN / PEMULIHAN AKSES ADMIN
+    ========================================================== -->
+    <div id="forgotPinModal" class="fixed inset-0 z-[60] hidden bg-black/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+        <div class="w-full max-w-md bg-rcSurface border border-rcBorderHover rounded-3xl p-6 sm:p-8 shadow-panel-dark my-8 relative">
+            <div class="flex items-center justify-between pb-4 mb-5 border-b border-rcBorder">
+                <div class="flex items-center gap-3">
+                    <span class="w-10 h-10 rounded-2xl bg-rcOrange/15 border border-rcOrange/40 text-rcOrange flex items-center justify-center">
+                        <i class="fa-solid fa-key"></i>
+                    </span>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Lupa PIN Admin?</h3>
+                        <p class="text-xs text-rcMuted font-sans">Verifikasi identitas pemilik untuk membuat PIN baru</p>
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    onclick="closeForgotPinModal()"
+                    class="pill-btn w-9 h-9 rounded-full bg-rcCard hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer"
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
 
-    window.closeArticleModal = function() {
-      const modal = document.getElementById('articleModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    };
+            <!-- Recovery Method Switcher -->
+            <div class="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-rcCard border border-rcBorder mb-5">
+                <button
+                    type="button"
+                    id="recTabKeyBtn"
+                    onclick="switchRecoveryMethod('key')"
+                    style="background-color: var(--accent, #F38B1C); color: #010101;"
+                    class="pill-btn py-2 px-3 rounded-xl font-bold text-xs text-center cursor-pointer"
+                >
+                    Kode Pemulihan
+                </button>
+                <button
+                    type="button"
+                    id="recTabFolderBtn"
+                    onclick="switchRecoveryMethod('folder')"
+                    class="pill-btn py-2 px-3 rounded-xl text-zinc-300 hover:text-white font-semibold text-xs text-center cursor-pointer"
+                >
+                    Verifikasi Drive ID
+                </button>
+            </div>
 
-    document.getElementById('articleForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const idxRaw = document.getElementById('artId').value;
-      const text = document.getElementById('artContent').value.trim();
-      const obj = {
-        id: idxRaw !== '' && state.articles[Number(idxRaw)] ? state.articles[Number(idxRaw)].id : ('art_' + Date.now()),
-        title: document.getElementById('artTitle').value.trim(),
-        category: document.getElementById('artCategory').value.trim() || 'Story',
-        date: document.getElementById('artDate').value.trim() || 'November 2026',
-        excerpt: text.slice(0, 140),
-        content: text,
-        updatedAt: new Date().toISOString()
-      };
+            <form id="forgotPinForm" onsubmit="handleForgotPinSubmit(event)" class="space-y-4">
+                <input type="hidden" id="recoveryMethodInput" value="key">
 
-      if (idxRaw !== '') state.articles[Number(idxRaw)] = obj;
-      else state.articles.unshift(obj);
+                <!-- Method 1: Master Recovery Key -->
+                <div id="recoveryKeyFieldBox" class="space-y-2">
+                    <label for="recoveryKeyVerifyInput" class="block text-xs font-soft font-bold text-zinc-300">
+                        Kode Pemulihan Utama (Master Recovery Key) *
+                    </label>
+                    <input
+                        type="password"
+                        id="recoveryKeyVerifyInput"
+                        placeholder="Masukkan Kode Pemulihan Anda..."
+                        class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-rcOrange"
+                    >
+                    <p class="text-[11px] text-rcMuted font-sans">
+                        Kode pemulihan yang tersimpan pada pengaturan keamanan portal Anda.
+                    </p>
+                </div>
 
-      closeArticleModal();
-      await syncAllToCloud('syncAll');
-    });
+                <!-- Method 2: Google Drive Folder ID Verification -->
+                <div id="recoveryFolderFieldBox" class="hidden space-y-2">
+                    <label for="recoveryFolderVerifyInput" class="block text-xs font-soft font-bold text-zinc-300">
+                        Google Drive Folder ID Terhubung *
+                    </label>
+                    <input
+                        type="text"
+                        id="recoveryFolderVerifyInput"
+                        placeholder="Masukkan Folder ID Google Drive database..."
+                        class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-rcOrange"
+                    >
+                    <p class="text-[11px] text-rcMuted font-sans">
+                        ID folder penyimpanan media Google Drive yang hanya diketahui pemilik akun.
+                    </p>
+                </div>
 
-    window.deleteArticle = async function(idx) {
-      if (!confirm('Hapus artikel ini?')) return;
-      state.articles.splice(idx, 1);
-      await syncAllToCloud('syncAll');
-    };
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+                    <div>
+                        <label for="recoveryNewPinInput" class="block text-xs font-soft font-bold text-zinc-300 mb-1.5">
+                            PIN Baru (6 Digit) *
+                        </label>
+                        <input
+                            type="password"
+                            id="recoveryNewPinInput"
+                            maxlength="6"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            placeholder="••••••"
+                            required
+                            class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm tracking-widest focus:outline-none focus:border-rcOrange"
+                        >
+                    </div>
+                    <div>
+                        <label for="recoveryConfirmPinInput" class="block text-xs font-soft font-bold text-zinc-300 mb-1.5">
+                            Konfirmasi PIN Baru *
+                        </label>
+                        <input
+                            type="password"
+                            id="recoveryConfirmPinInput"
+                            maxlength="6"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            placeholder="••••••"
+                            required
+                            class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm tracking-widest focus:outline-none focus:border-rcOrange"
+                        >
+                    </div>
+                </div>
 
-    function fillSettingsForm() {
-      document.getElementById('setBrandName').value = state.settings.brandName || 'Rohman Capture';
-      document.getElementById('setWhatsapp').value = state.settings.whatsapp || '6289640047789';
-      document.getElementById('setHeroBadge').value = state.settings.heroBadge || '';
-      document.getElementById('setHeroTitle').value = state.settings.heroTitle || '';
-      document.getElementById('setHeroSubtitle').value = state.settings.heroSubtitle || '';
-      document.getElementById('setApiUrl').value = getApiUrl();
-    }
+                <p id="recoveryErrorMsg" class="hidden text-xs text-red-400 flex items-center gap-1.5 font-sans">
+                    <i class="fa-solid fa-circle-exclamation shrink-0"></i>
+                    <span id="recoveryErrorText">Verifikasi gagal.</span>
+                </p>
 
-    document.getElementById('settingsForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const customUrl = document.getElementById('setApiUrl').value.trim();
-      if (customUrl) localStorage.setItem(STORAGE_KEYS.API_URL, customUrl);
+                <div class="pt-2 flex items-center gap-2.5">
+                    <button
+                        type="button"
+                        onclick="closeForgotPinModal()"
+                        class="pill-btn flex-1 py-3 px-4 rounded-full bg-rcCard hover:bg-white/10 text-zinc-300 text-xs font-semibold cursor-pointer"
+                    >
+                        Batal
+                    </button>
+                    <button
+                        type="submit"
+                        id="recoverySubmitBtn"
+                        style="background-color: var(--accent, #F38B1C); color: #010101;"
+                        class="btn-orange-solid pill-btn flex-1 py-3 px-5 rounded-full bg-rcOrange hover:bg-rcOrangeHover text-rcBlack font-bold text-xs shadow-orange-glow cursor-pointer"
+                    >
+                        Reset PIN & Masuk
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-      state.settings.brandName = document.getElementById('setBrandName').value.trim();
-      state.settings.whatsapp = document.getElementById('setWhatsapp').value.trim();
-      state.settings.heroBadge = document.getElementById('setHeroBadge').value.trim();
-      state.settings.heroTitle = document.getElementById('setHeroTitle').value.trim();
-      state.settings.heroSubtitle = document.getElementById('setHeroSubtitle').value.trim();
+    <!-- =========================================================
+         2. MAIN DASHBOARD WORKSPACE (SIDEBAR + TOP BAR + CONTENT)
+    ========================================================== -->
+    <div id="adminWorkspace" class="min-h-screen flex flex-col lg:flex-row bg-admin-grid">
 
-      await syncAllToCloud('syncAll');
-    });
+        <!-- Mobile Backdrop -->
+        <div id="sidebarBackdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 z-30 bg-black/75 backdrop-blur-sm hidden lg:hidden"></div>
 
-    // Auto-unlock jika sesi browser masih aktif
-    if (sessionStorage.getItem(STORAGE_KEYS.UNLOCKED) === '1') {
-      unlockDashboard();
-    }
-  </script>
-</body>
-</html>
+        <!-- LEFT NAVIGATION SIDEBAR -->
+        <aside id="adminSidebar" class="fixed lg:sticky top-0 left-0 z-40 h-screen w-72 shrink-0 bg-rcSurface border-r border-rcBorder flex flex-col justify-between p-5 transition-transform duration-300 -translate-x-full lg:translate-x-0">
+            
+            <!-- Top Brand & Primary Navigation Menu -->
+            <div class="space-y-6 overflow-y-auto pr-1">
+                <!-- Logo & Portal Badge -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-rcCard border border-rcOrange/35 px-3 py-2 rounded-2xl shadow-orange-subtle flex items-center justify-center">
+                            <div class="brand-logo-slot flex items-center justify-center">
+                                <svg class="h-8 w-auto logo-glow" viewBox="0 0 185 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path class="brand-svg-fill" d="M22 14 H78 C108 14 122 28 119 48 C116 63 125 69 144 69 H180 L165 85 H136 C97 85 80 66 84 42 C86 31 78 30 62 30 H8 L22 14 Z"/>
+                                    <circle class="brand-svg-fill" cx="148" cy="44" r="10.5"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="font-soft font-bold text-base text-white tracking-tight leading-tight">
+                                ROHMAN <span class="text-rcOrange">CAPTURE</span>
+                            </div>
+                            <span class="inline-flex items-center gap-1.5 mt-1 px-2.5 py-0.5 rounded-full bg-rcOrange/15 border border-rcOrange/35 text-rcOrangeLight text-[10px] font-bold">
+                                <span class="w-1.5 h-1.5 rounded-full bg-rcOrange"></span>
+                                ADMIN PORTAL
+                            </span>
+                        </div>
+                    </div>
+
+                    <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-full text-zinc-400 hover:text-white cursor-pointer">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Photographer Mini Profile Card -->
+                <div class="p-3.5 rounded-2xl bg-rcCard border border-rcBorder flex items-center gap-3">
+                    <img
+                        id="sidebarProfileAvatar"
+                        src="Profile_RC - 2025_Bio Link.jpg"
+                        alt="Rohman"
+                        class="w-11 h-11 rounded-full object-cover border-2 border-rcOrange/70 shrink-0"
+                        onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80';"
+                    >
+                    <div class="min-w-0">
+                        <div id="sidebarProfileName" class="font-soft font-bold text-sm text-white truncate">Rohman</div>
+                        <div id="sidebarLocationText" class="text-[11px] text-rcMuted truncate">Fotografer Jakarta Timur</div>
+                    </div>
+                </div>
+
+                <!-- 5 PRIMARY NAVIGATION BUTTONS -->
+                <nav class="space-y-2" aria-label="Menu Utama Dashboard Admin">
+                    <div class="px-3 text-[11px] font-soft font-bold uppercase tracking-wider text-zinc-500 mb-2">
+                        Menu Utama
+                    </div>
+
+                    <!-- 1. Ringkasan -->
+                    <button
+                        onclick="switchSection('ringkasan')"
+                        data-nav="ringkasan"
+                        class="sidebar-item active w-full flex items-center gap-3.5 px-4 py-3 rounded-full text-sm font-semibold text-zinc-300 hover:bg-rcCard hover:text-white cursor-pointer"
+                    >
+                        <i class="fa-solid fa-chart-pie w-4 text-center text-rcOrange"></i>
+                        <span>Ringkasan</span>
+                    </button>
+
+                    <!-- 2. Teks & Profil -->
+                    <button
+                        onclick="switchSection('teks-profil')"
+                        data-nav="teks-profil"
+                        class="sidebar-item w-full flex items-center gap-3.5 px-4 py-3 rounded-full text-sm font-semibold text-zinc-300 hover:bg-rcCard hover:text-white cursor-pointer"
+                    >
+                        <i class="fa-solid fa-pen-nib w-4 text-center text-rcOrange"></i>
+                        <span>Teks & Profil</span>
+                    </button>
+
+                    <!-- 3. Portofolio -->
+                    <button
+                        onclick="switchSection('portofolio')"
+                        data-nav="portofolio"
+                        class="sidebar-item w-full flex items-center justify-between px-4 py-3 rounded-full text-sm font-semibold text-zinc-300 hover:bg-rcCard hover:text-white cursor-pointer"
+                    >
+                        <span class="flex items-center gap-3.5">
+                            <i class="fa-solid fa-images w-4 text-center text-rcOrange"></i>
+                            <span>Portofolio</span>
+                        </span>
+                        <span id="sidebarPortfolioBadge" class="px-2 py-0.5 rounded-full bg-white/10 text-[11px] font-bold">6</span>
+                    </button>
+
+                    <!-- 4. Konten & Video -->
+                    <button
+                        onclick="switchSection('konten')"
+                        data-nav="konten"
+                        class="sidebar-item w-full flex items-center justify-between px-4 py-3 rounded-full text-sm font-semibold text-zinc-300 hover:bg-rcCard hover:text-white cursor-pointer"
+                    >
+                        <span class="flex items-center gap-3.5">
+                            <i class="fa-solid fa-clapperboard w-4 text-center text-rcOrange"></i>
+                            <span>Konten & Video</span>
+                        </span>
+                        <span id="sidebarContentBadge" class="px-2 py-0.5 rounded-full bg-white/10 text-[11px] font-bold">6</span>
+                    </button>
+
+                    <!-- 5. Setting -->
+                    <button
+                        onclick="switchSection('setting')"
+                        data-nav="setting"
+                        class="sidebar-item w-full flex items-center justify-between px-4 py-3 rounded-full text-sm font-semibold text-zinc-300 hover:bg-rcCard hover:text-white cursor-pointer"
+                    >
+                        <span class="flex items-center gap-3.5">
+                            <i class="fa-solid fa-gear w-4 text-center text-rcOrange"></i>
+                            <span>Setting</span>
+                        </span>
+                        <span class="w-2 h-2 rounded-full bg-rcOrange/70"></span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Sidebar Footer: Lock Portal Button -->
+            <div class="pt-4 border-t border-rcBorder space-y-2.5">
+                <div class="px-3 py-2 rounded-2xl bg-rcCard/70 border border-rcBorder flex items-center justify-between text-[11px] text-zinc-400 font-soft">
+                    <span>Auto-Lock:</span>
+                    <span id="sidebarAutoLockStatus" class="text-rcOrange font-bold">Nonaktif</span>
+                </div>
+
+                <button
+                    onclick="lockAdminPortal()"
+                    class="pill-btn w-full py-3 px-4 rounded-full bg-rcCard hover:bg-red-500/15 text-zinc-300 hover:text-red-400 border border-rcBorderHover hover:border-red-500/35 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer"
+                >
+                    <i class="fa-solid fa-lock"></i>
+                    <span>Kunci Portal</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- RIGHT WORKSPACE COLUMN (TOP HEADER BAR + SECTIONS) -->
+        <div class="flex-1 min-w-0 flex flex-col">
+
+            <!-- STICKY TOP HEADER BAR -->
+            <header class="sticky top-0 z-30 bg-rcSurface/90 backdrop-blur-xl border-b border-rcBorder px-4 sm:px-7 lg:px-10 py-3.5">
+                <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+                    
+                    <!-- Left: Mobile Drawer Button + Active Section Title -->
+                    <div class="flex items-center gap-3.5 min-w-0">
+                        <button
+                            onclick="toggleMobileSidebar()"
+                            class="lg:hidden pill-btn p-2.5 rounded-full bg-rcCard border border-rcBorderHover text-zinc-200 hover:text-rcOrange shrink-0 cursor-pointer"
+                            aria-label="Buka Navigasi"
+                        >
+                            <i class="fa-solid fa-bars text-base px-0.5"></i>
+                        </button>
+
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2.5">
+                                <h1 id="topBarSectionTitle" class="text-lg sm:text-xl font-bold text-white truncate">
+                                    Ringkasan Dashboard
+                                </h1>
+                                <!-- Live Storage / Sync Status Badge -->
+                                <span id="topBarSyncBadge" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-rcCard border border-rcBorderHover text-zinc-300 text-[11px] font-bold shrink-0">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rcOrange"></span>
+                                    <span>Mode Lokal</span>
+                                </span>
+                            </div>
+                            <p id="topBarSectionSubtitle" class="text-[11px] sm:text-xs text-rcMuted font-sans truncate">
+                                Statistik konten, ringkasan portofolio, dan pintasan cepat Rohman Capture
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Right: Quick Setting Icon + Prominent Preview Web Publik Button -->
+                    <div class="flex items-center gap-2.5 shrink-0">
+                        <button
+                            onclick="switchSection('setting')"
+                            class="pill-btn p-2.5 sm:px-4 sm:py-2.5 rounded-full bg-rcCard hover:bg-[#191919] text-zinc-300 hover:text-rcOrange border border-rcBorderHover text-xs font-bold flex items-center gap-2 cursor-pointer"
+                            title="Buka Setting"
+                        >
+                            <i class="fa-solid fa-gear text-rcOrange"></i>
+                            <span class="hidden md:inline">Setting</span>
+                        </button>
+
+                        <button
+                            onclick="openPublicPreviewModal()"
+                            style="background-color: var(--accent, #F38B1C); color: #010101;"
+                            class="btn-orange-solid pill-btn px-4 sm:px-5 py-2.5 rounded-full bg-rcOrange hover:bg-rcOrangeHover text-rcBlack font-bold text-xs sm:text-sm shadow-orange-glow flex items-center gap-2 cursor-pointer"
+                        >
+                            <i class="fa-solid fa-eye"></i>
+                            <span>Preview Web Publik</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- MAIN CONTENT AREA -->
+            <main class="flex-1 p-4 sm:p-7 lg:p-10 max-w-7xl mx-auto w-full space-y-8">
+
+                <!-- =====================================================
+                     SECTION 1: RINGKASAN (DASHBOARD OVERVIEW)
+                ====================================================== -->
+                <section id="section-ringkasan" class="section-animate space-y-7">
+                    <!-- Welcome Banner + Quick Shortcuts -->
+                    <div class="bg-rcSurface border border-rcBorder rounded-3xl p-6 sm:p-7 space-y-5">
+                        <div class="space-y-1.5">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rcOrange/15 text-rcOrangeLight text-xs font-bold">
+                                <i class="fa-solid fa-camera-retro"></i> Rohman Capture • Jakarta Timur
+                            </div>
+                            <h2 id="overviewWelcomeHeading" class="text-2xl sm:text-3xl font-bold text-white">Halo Bro Rohman, Siap Update Karya?</h2>
+                            <p class="text-xs sm:text-sm text-rcMuted font-sans max-w-2xl">
+                                Kelola teks halaman utama, upload foto portofolio multi-slide baru, atau atur konfigurasi website langsung dari panel ini.
+                            </p>
+                        </div>
+
+                        <!-- Quick Action Shortcuts -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1">
+                            <button
+                                onclick="openAddPortfolioModal()"
+                                style="background-color: var(--accent, #F38B1C); color: #010101;"
+                                class="btn-orange-solid pill-btn w-full px-4 py-3 rounded-full bg-rcOrange hover:bg-rcOrangeHover text-rcBlack font-bold text-xs shadow-orange-glow flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                <i class="fa-solid fa-plus"></i>
+                                <span>+ Tambah Karya Baru</span>
+                            </button>
+                            <button
+                                onclick="openAddContentModal()"
+                                class="pill-btn w-full px-4 py-3 rounded-full bg-rcCard hover:bg-[#191919] text-rcOrangeLight border border-rcOrange/45 hover:border-rcOrange font-bold text-xs flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                <i class="fa-solid fa-newspaper text-rcOrange"></i>
+                                <span>+ Tambah Konten / Video</span>
+                            </button>
+                            <button
+                                onclick="switchSection('teks-profil')"
+                                class="pill-btn w-full px-4 py-3 rounded-full bg-rcCard hover:bg-[#191919] text-white border border-rcBorderHover font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                <i class="fa-solid fa-pen-to-square text-rcOrange"></i>
+                                <span>Edit Teks Hero</span>
+                            </button>
+                            <button
+                                onclick="switchSection('setting')"
+                                class="pill-btn w-full px-4 py-3 rounded-full bg-rcCard hover:bg-[#191919] text-white border border-rcBorderHover font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                <i class="fa-solid fa-gear text-rcOrange"></i>
+                                <span>Buka Setting</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4 SUMMARY STAT CARDS -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Card 1: Total Karya Portofolio -->
+                        <div class="bg-rcSurface border border-rcBorder hover:border-rcOrange/50 rounded-2xl p-5 flex flex-col justify-between transition">
+                            <div class="flex items-center justify-between gap-2 mb-3">
+                                <span class="text-xs font-bold text-rcMuted">Total Karya & Konten</span>
+                                <span class="w-9 h-9 rounded-xl bg-rcOrange/15 text-rcOrange flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-images"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <div id="statTotalPortfolio" class="text-3xl font-bold text-white">6</div>
+                                <p class="text-xs text-zinc-400 mt-1 font-sans">
+                                    Galeri aktif • <span id="statTotalContentInline" class="text-rcOrange font-bold">6 Artikel/Video</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Distribusi Kategori -->
+                        <div class="bg-rcSurface border border-rcBorder hover:border-rcOrange/50 rounded-2xl p-5 flex flex-col justify-between transition">
+                            <div class="flex items-center justify-between gap-2 mb-3">
+                                <span class="text-xs font-bold text-rcMuted">Kategori Filter</span>
+                                <span class="w-9 h-9 rounded-xl bg-rcOrange/15 text-rcOrange flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-layer-group"></i>
+                                </span>
+                            </div>
+                            <div id="statCategoryBreakdownGrid" class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs font-sans">
+                                <!-- Rendered dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Card 3: WhatsApp Direct -->
+                        <div class="bg-rcSurface border border-rcBorder hover:border-rcOrange/50 rounded-2xl p-5 flex flex-col justify-between transition">
+                            <div class="flex items-center justify-between gap-2 mb-3">
+                                <span class="text-xs font-bold text-rcMuted">WhatsApp Direct</span>
+                                <span class="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
+                                    <i class="fa-brands fa-whatsapp text-base"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <div id="statWhatsappNumber" class="text-lg sm:text-xl font-bold text-white truncate">089640047789</div>
+                                <p class="text-xs text-emerald-400 mt-1 font-sans flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
+                                    <span class="truncate">Form Booking Terhubung</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Card 4: Status Booking -->
+                        <div class="bg-rcSurface border border-rcBorder hover:border-rcOrange/50 rounded-2xl p-5 flex flex-col justify-between transition">
+                            <div class="flex items-center justify-between gap-2 mb-3">
+                                <span class="text-xs font-bold text-rcMuted">Status Booking</span>
+                                <span class="w-9 h-9 rounded-xl bg-rcOrange/15 text-rcOrange flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-calendar-check"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <div id="statBookingStatusText" class="text-sm sm:text-base font-bold text-white leading-snug line-clamp-2">Open Booking 2026/2027</div>
+                                <p class="text-xs text-zinc-400 mt-1 font-sans truncate">Tampil di banner web publik</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- =====================================================
+                     SECTION 2: TEKS & PROFIL WEB
+                ====================================================== -->
+                <section id="section-teks-profil" class="hidden section-animate space-y-7">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-rcSurface border border-rcBorder rounded-3xl p-6 sm:p-7">
+                        <div class="space-y-1">
+                            <h2 class="text-2xl sm:text-3xl font-bold text-white">Teks & Profil Web</h2>
+                            <p class="text-xs sm:text-sm text-rcMuted font-sans">
+                                Ubah kalimat pembuka hero, foto profil, bio singkat Jakarta Timur, serta tambah/ubah kartu layanan utama.
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onclick="saveSiteContent()"
+                            style="background-color: var(--accent, #F38B1C); color: #010101;"
+                            class="btn-orange-solid pill-btn px-6 py-3.5 rounded-full bg-rcOrange hover:bg-rcOrangeHover text-rcBlack font-bold text-sm shadow-orange-glow flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                        >
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <span>Simpan Perubahan</span>
+                        </button>
+                    </div>
+
+                    <form id="siteContentForm" onsubmit="event.preventDefault(); saveSiteContent();" class="space-y-6">
+                        
+                        <!-- Card 1: Hero Section Texts -->
+                        <div class="bg-rcSurface border border-rcBorder rounded-3xl p-6 sm:p-8 space-y-5">
+                            <div class="flex items-center gap-3 pb-4 border-b border-rcBorder">
+                                <span class="w-10 h-10 rounded-2xl bg-rcOrange/15 text-rcOrange flex items-center justify-center">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                </span>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">1. Teks Utama Hero Section</h3>
+                                    <p class="text-xs text-rcMuted font-sans">Badge lokasi, headline utama, dan deskripsi pembuka</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label for="editHeroBadge" class="block text-xs font-soft font-bold text-zinc-300 mb-2">
+                                        Badge Lokasi Hero
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="editHeroBadge"
+                                        placeholder="Fotografer Jakarta Timur"
+                                        class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm focus:outline-none focus:border-rcOrange transition"
+                                    >
+                                </div>
+
+                                <div>
+                                    <label for="editHeroCtaPrimary" class="block text-xs font-soft font-bold text-zinc-300 mb-2">
+                                        Teks Tombol Utama Hero
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="editHeroCtaPrimary"
+                                        placeholder="Lihat Portofolio"
+                                        class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm focus:outline-none focus:border-rcOrange transition"
+                                    >
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="editHeroHeadline" class="block text-xs font-soft font-bold text-zinc-300 mb-2">
+                                    Headline Utama Hero
+                                </label>
+                                <input
+                                    type="text"
+                                    id="editHeroHeadline"
+                                    class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm font-semibold focus:outline-none focus:border-rcOrange transition"
+                                >
+                            </div>
+
+                            <div>
+                                <label for="editHeroSubtitle" class="block text-xs font-soft font-bold text-zinc-300 mb-2">
+                                    Sub-headline Deskripsi Layanan
+                                </label>
+                                <textarea
+                                    id="editHeroSubtitle"
+                                    rows="3"
+                                    class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm focus:outline-none focus:border-rcOrange transition"
+                                ></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Tentang Saya / Bio Singkat & Foto Profil -->
+                        <div class="bg-rcSurface border border-rcBorder rounded-3xl p-6 sm:p-8 space-y-6">
+                            <div class="flex items-center gap-3 pb-4 border-b border-rcBorder">
+                                <span class="w-10 h-10 rounded-2xl bg-rcOrange/15 text-rcOrange flex items-center justify-center">
+                                    <i class="fa-solid fa-user-check"></i>
+                                </span>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">2. Tentang Saya & Foto Profil</h3>
+                                    <p class="text-xs text-rcMuted font-sans">Perkenalan fotografer Jakarta Timur</p>
+                                </div>
+                            </div>
+
+                            <!-- Foto Profil Upload & URL -->
+                            <div class="p-5 rounded-2xl bg-rcCard border border-rcBorderHover flex flex-col sm:flex-row items-center gap-5">
+                                <img
+                                    id="profilePhotoPreview"
+                                    src="Profile_RC - 2025_Bio Link.jpg"
+                                    alt="Foto Profil"
+                                    class="w-24 h-24 rounded-2xl object-cover border-2 border-rcOrange shadow-orange-subtle shrink-0"
+                                    onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=85';"
+                                >
+                                <div class="flex-1 w-full space-y-2.5 text-center sm:text-left">
+                                    <div class="font-soft font-bold text-sm text-white">Foto Profil Utama</div>
+                                    <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                                        <label style="background-color: var(--accent, #F38B1C); color: #010101;" class="btn-orange-solid pill-btn cursor-pointer px-4 py-2 rounded-full bg-rcOrange hover:bg-rcOrangeHover text-rcBlack font-bold text-xs inline-flex items-center gap-2">
+                                            <i class="fa-solid fa-upload"></i>
+                                            <span>Upload Foto Profil</span>
+                                            <input type="file" id="profilePhotoInput" accept="image/*" onchange="handleProfilePhotoUpload(event)" class="hidden">
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onclick="resetProfilePhoto()"
+                                            class="pill-btn px-4 py-2 rounded-full bg-rcBlack hover:bg-white/10 text-zinc-300 text-xs font-semibold border border-rcBorderHover cursor-pointer"
+                                        >
+                                            Reset Default
+                                        </button>
+                                    </div>
+                                    <div>
+                                        <input
+                                            type="url"
+                                            id="editProfilePhotoUrl"
+                                            oninput="handleProfilePhotoUrlChange(this.value)"
+                                            placeholder="Atau tempel URL foto profil (https://...)"
+                                            class="w-full px-3.5 py-2 rounded-xl bg-rcBlack border border-rcBorderHover text-zinc-200 placeholder-zinc-500 text-xs focus:outline-none focus:border-rcOrange"
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label for="editAboutTitle" class="block text-xs font-soft font-bold text-zinc-300 mb-2">
+                                        Judul Seksi Tentang Saya
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="editAboutTitle"
+                                        class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm focus:outline-none focus:border-rcOrange transition"
+                                    >
+                                </div>
+
+                                <div>
+                                    <label for="editStudioLocation" class="block text-xs font-soft font-bold text-zinc-300 mb-2">
+                                        Area Basis & Jangkauan
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="editStudioLocation"
+                                        class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm focus:outline-none focus:border-rcOrange transition"
+                                    >
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="editAboutBio" class="block text-xs font-soft font-bold text-zinc-300 mb-2">
+                                    Bio Singkat Fotografer
+                                </label>
+                                <textarea
+                                    id="editAboutBio"
+                                    rows="3"
+                                    class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm focus:outline-none focus:border-rcOrange transition"
+                                ></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Kartu Layanan Utama (Dinamis + Fitur Tambah) -->
+                        <div class="bg-rcSurface border border-rcBorder rounded-3xl p-6 sm:p-8 space-y-5">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-rcBorder">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-10 h-10 rounded-2xl bg-rcOrange/15 text-rcOrange flex items-center justify-center">
+                                        <i class="fa-solid fa-camera"></i>
+                                    </span>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-white">3. Kartu Layanan Utama</h3>
+                                        <p class="text-xs text-rcMuted font-sans">Tambah, edit judul/ikon, atau hapus kartu layanan yang tampil di halaman utama</p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onclick="addServiceCard()"
+                                    class="pill-btn px-4 py-2.5 rounded-full bg-rcCard hover:bg-rcOrange text-rcOrangeLight hover:text-rcBlack border border-rcOrange/45 hover:border-rcOrange font-bold text-xs inline-flex items-center gap-2 self-start sm:self-auto cursor-pointer"
+                                >
+                                    <i class="fa-solid fa-plus"></i>
+                                    <span>+ Tambah Kartu Layanan</span>
+                                </button>
+                            </div>
+
+                            <div id="dynamicServicesEditorList" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <!-- Rendered dynamically by renderServicesEditor() -->
+                            </div>
+
+                            <div class="pt-2 flex justify-end">
+                                <button
+                                    type="submit"
+                                    style="background-color: var(--accent, #F38B1C); color: #010101;"
+                                    class="btn-orange-solid pill-btn px-7 py-3.5 rounded-full bg-rcOrange hover:bg-rcOrangeHover text-rcBlack font-bold text-sm shadow-orange-glow flex items-center gap-2 cursor-pointer"
+                                >
+                                    <i class="fa-solid fa-check"></i>
+                                    <span>Simpan Perubahan</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- =====================================================
+                     SECTION 3: KELOLA PORTOFOLIO
+                ====================================================== -->
+                <section id="section-portofolio" class="hidden section-animate space-y-7">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-rcSurface border border-rcBorder rounded-3xl p-6 sm:p-7">
+                        <div class="space-y-1">
+                            <h2 class="text-2xl sm:text-3xl font-bold text-white">Kelola Portofolio</h2>
+                            <p id="portfolioCategorySubtitle" class="text-xs sm:text-sm text-rcMuted font-sans">
+                                Tambah, edit, hapus karya foto, atau atur urutan tampilnya menggunakan tombol panah ▲/▼ dan nomor posisi #1..N.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+                            <button
+                                type="button"
+                                onclick="openCategoryManagerModal()"
+                                class="pill-btn px-5 py-3.5 rounded-full bg-rcCard hover:bg-[#191919] text-rcOrangeLight border border-rcOrange/45 hover:border-rcOrange font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                <i class="fa-solid fa-folder-plus text-rcOrange"></i>
+                                <span>+ Tambah Kategori</span>
+                            </button>
+                            <button
+                                onclick="openAddPortfolioModal()"
+                                style="background-color: var(--accent, #F38B1C); color: #010101;"
+                                class="btn-orange-solid pill-btn px-6 py-3.5 rounded-full bg-rcOrange hover:bg-rcOrangeHover text-rcBlack font-bold text-sm shadow-orange-glow flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                <i class="fa-solid fa-plus"></i>
+                                <span>+ Tambah Karya Baru</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filter Pills & Search Toolbar -->
+                    <div class="bg-rcSurface border border-rcBorder rounded-3xl p-4 sm:p-5 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+                        <div id="adminFilterBar" class="flex flex-wrap items-center gap-2">
+                            <!-- Rendered dynamically by renderCategoryUI() -->
+                        </div>
+
+                        <div class="relative w-full xl:w-72">
+                            <span class="absolute inset-y-0 left-4 flex items-center text-zinc-400">
+                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            </span>
+                            <input
+                                type="text"
+                                id="portfolioSearchInput"
+                                oninput="renderAdminPortfolioGrid()"
+                                placeholder="Cari judul atau lokasi..."
+                                class="w-full pl-10 pr-4 py-2.5 rounded-full bg-rcCard border border-rcBorderHover text-white placeholder-zinc-500 text-xs sm:text-sm focus:outline-none focus:border-rcOrange transition"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Responsive Portfolio Cards Grid -->
+                    <div id="adminPortfolioGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </section>
+
+                <!-- =====================================================
+                     SECTION 3B: KELOLA KONTEN, ARTIKEL & VIDEO
+                ====================================================== -->
+                <section id="section-konten" class="hidden section-animate space-y-7">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-rcSurface border border-rcBorder rounded-3xl p-6 sm:p-7">
+                        <div class="space-y-1">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rcOrange/15 text-rcOrangeLight text-xs font-bold">
+                                <i class="fa-solid fa-clapperboard"></i> Jurnal, Tips & Video BTS
+                            </div>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-white">Kelola Konten, Artikel & Video</h2>
+                            <p class="text-xs sm:text-sm text-rcMuted font-sans">
+                                Tulis artikel tips pemotretan, rekomendasi spot Jakarta Timur, atau bagikan video Behind The Scenes (YouTube / Reels / TikTok).
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+                            <button
+                                type="button"
+                                onclick="openAddContentModal('Video')"
+                                class="pill-btn px-5 py-3.5 rounded-full bg-rcCard hover:bg-[#191919] text-rcOrangeLight border border-rcOrange/45 hover:border-rcOrange font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                <i class="fa-solid fa-video text-rcOrange"></i>
+                                <span>+ Tambah Video</span>
+                            </button>
+                            <button
+                                type="button"
+                                onclick="openAddContentModal('Artikel')"
+                                style="background-color: var(--accent, #F38B1C); color: #010101;"
+                                class="btn-orange-solid pill-btn px-6 py-3.5 rounded-full bg-rcOrange hover:bg-rcOrangeHover text-rcBlack font-bold text-sm shadow-orange-glow flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                <i class="fa-solid fa-plus"></i>
+                                <span>+ Tambah Artikel</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Content Filter Pills & Search Toolbar -->
+                    <div class="bg-rcSurface border border-rcBorder rounded-3xl p-4 sm:p-5 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+                        <div id="adminContentFilterBar" class="flex flex-wrap items-center gap-2">
+                            <button onclick="setAdminContentFilter('All')" data-ctype="All" class="filter-pill active px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold border border-rcBorderHover flex items-center gap-2 cursor-pointer">
+                                <span>Semua Konten</span>
+                                <span id="contentCount-All" class="px-2 py-0.5 rounded-full bg-black/20 text-xs">6</span>
+                            </button>
+                            <button onclick="setAdminContentFilter('Artikel')" data-ctype="Artikel" class="filter-pill px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold text-zinc-300 bg-rcCard hover:text-white border border-rcBorderHover flex items-center gap-2 cursor-pointer">
+                                <i class="fa-solid fa-newspaper text-rcOrange text-xs"></i>
+                                <span>Artikel & Tips</span>
+                                <span id="contentCount-Artikel" class="px-2 py-0.5 rounded-full bg-white/10 text-xs">5</span>
+                            </button>
+                            <button onclick="setAdminContentFilter('Video')" data-ctype="Video" class="filter-pill px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold text-zinc-300 bg-rcCard hover:text-white border border-rcBorderHover flex items-center gap-2 cursor-pointer">
+                                <i class="fa-solid fa-play text-rcOrange text-xs"></i>
+                                <span>Video & BTS</span>
+                                <span id="contentCount-Video" class="px-2 py-0.5 rounded-full bg-white/10 text-xs">1</span>
+                            </button>
+                        </div>
+
+                        <div class="relative w-full xl:w-72">
+                            <span class="absolute inset-y-0 left-4 flex items-center text-zinc-400">
+                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            </span>
+                            <input
+                                type="text"
+                                id="contentSearchInput"
+                                oninput="renderAdminContentGrid()"
+                                placeholder="Cari judul artikel atau video..."
+                                class="w-full pl-10 pr-4 py-2.5 rounded-full bg-rcCard border border-rcBorderHover text-white placeholder-zinc-500 text-xs sm:text-sm focus:outline-none focus:border-rcOrange transition"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Responsive Content Cards Grid -->
+                    <div id="adminContentGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </section>
+
+                <!-- =====================================================
+                     SECTION 4: SETTING (COMPREHENSIVE SETTINGS WORKSPACE)
+                ====================================================== -->
+                <section id="section-setting" class="hidden section-animate space-y-7">
+                    
+                    <!-- Setting Header -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-rcSurface border border-rcBorder rounded-3xl p-6 sm:p-7">
+                        <div class="space-y-1">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rcOrange/15 text-rcOrangeLight text-xs font-bold">
+                                <i class="fa-solid fa-gear"></i> Pengaturan Sistem & Brand
+                            </div>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-white">Setting Portal Rohman Capture</h2>
+                            <p class="text-xs sm:text-sm text-rcMuted font-sans">
+                                Atur nama profil, keamanan PIN admin, nomor & template WhatsApp, status booking, koneksi database, logo & warna brand, serta backup data.
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            onclick="saveAllSettings()"
+                            style="background-color: var(--accent, #F38B1C); color: #010101;"
+                            class="btn-orange-solid pill-btn px-6 py-3.5 rounded-full bg-rcOrange hover:bg-rcOrangeHover text-rcBlack font-bold text-sm shadow-orange-glow flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                        >
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <span>Simpan Semua Setting</span>
+                        </button>
+                    </div>
+
+                    <!-- Setting Sub-Tabs Navigation Pills -->
+                    <div class="bg-rcSurface border border-rcBorder rounded-3xl p-2.5 flex flex-wrap items-center gap-2">
+                        <button onclick="filterSettingCards('all')" data-stab="all" class="setting-tab-pill active px-4 py-2 rounded-full text-xs font-bold border border-rcBorderHover cursor-pointer">
+                            Semua Setting (6)
+                        </button>
+                        <button onclick="filterSettingCards('profil')" data-stab="profil" class="setting-tab-pill px-4 py-2 rounded-full text-xs font-semibold bg-rcCard text-zinc-300 border border-rcBorderHover hover:text-white cursor-pointer">
+                            <i class="fa-solid fa-user-pen text-rcOrange mr-1"></i> Profil & Nama
+                        </button>
+                        <button onclick="filterSettingCards('keamanan')" data-stab="keamanan" class="setting-tab-pill px-4 py-2 rounded-full text-xs font-semibold bg-rcCard text-zinc-300 border border-rcBorderHover hover:text-white cursor-pointer">
+                            <i class="fa-solid fa-shield-halved text-rcOrange mr-1"></i> Keamanan & PIN
+                        </button>
+                        <button onclick="filterSettingCards('whatsapp')" data-stab="whatsapp" class="setting-tab-pill px-4 py-2 rounded-full text-xs font-semibold bg-rcCard text-zinc-300 border border-rcBorderHover hover:text-white cursor-pointer">
+                            <i class="fa-brands fa-whatsapp text-emerald-400 mr-1"></i> WhatsApp & Booking
+                        </button>
+                        <button onclick="filterSettingCards('database')" data-stab="database" class="setting-tab-pill px-4 py-2 rounded-full text-xs font-semibold bg-rcCard text-zinc-300 border border-rcBorderHover hover:text-white cursor-pointer">
+                            <i class="fa-solid fa-database text-rcOrange mr-1"></i> Database & API
+                        </button>
+                        <button onclick="filterSettingCards('brand')" data-stab="brand" class="setting-tab-pill px-4 py-2 rounded-full text-xs font-semibold bg-rcCard text-zinc-300 border border-rcBorderHover hover:text-white cursor-pointer">
+                            <i class="fa-solid fa-palette text-rcOrange mr-1"></i> Identitas Brand & SEO
+                        </button>
+                        <button onclick="filterSettingCards('backup')" data-stab="backup" class="setting-tab-pill px-4 py-2 rounded-full text-xs font-semibold bg-rcCard text-zinc-300 border border-rcBorderHover hover:text-white cursor-pointer">
+                            <i class="fa-solid fa-box-archive text-rcOrange mr-1"></i> Backup & Reset
+                        </button>
+                    </div>
+
+                    <!-- 6 STRUCTURED SETTING CARDS -->
+                    <div class="space-y-6">
+
+                        <!-- 0. PROFIL & UBAH NAMA ADMIN / FOTOGRAFER -->
+                        <div data-scard="profil" class="setting-card bg-rcSurface border border-rcBorder rounded-3xl p-6 sm:p-8 space-y-5">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-rcBorder">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-10 h-10 rounded-2xl bg-rcOrange/15 text-rcOrange flex items-center justify-center">
+                                        <i class="fa-solid fa-user-pen"></i>
+                                    </span>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-white">Profil & Nama Admin / Fotografer</h3>
+                                        <p class="text-xs text-rcMuted font-sans">Ubah nama panggilan kamu yang tampil di dashboard admin & kartu profil web publik</p>
+                                    </div>
+                                </div>
+                                <span id="settingCurrentNameBadge" class="px-3.5 py-1 rounded-full bg-rcOrange/15 border border-rcOrange/35 text-rcOrangeLight text-xs font-bold self-start sm:self-auto">
+                                    Aktif: Rohman
+                                </span>
+                            </div>
+
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
+                                <div class="flex-1">
+                                    <label for="settingOwnerNameInput" class="block text-xs font-soft font-bold text-zinc-300 mb-2">
+                                        Nama Kamu (Admin / Fotografer)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="settingOwnerNameInput"
+                                        value="Rohman"
+                                        placeholder="Masukkan nama kamu..."
+                                        class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white placeholder-zinc-500 text-sm font-semibold focus:outline-none focus:border-rcOrange transition"
+                                    >
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onclick="saveOwnerName()"
+                                    style="background-color: var(--accent, #F38B1C); color: #010101;"
+                                    class="btn-orange-solid pill-btn px-6 py-3 rounded-full bg-[#F38B1C] hover:bg-[#FF9F38] text-[#010101] font-bold text-xs sm:text-sm shadow-orange-subtle flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                                >
+                                    <i class="fa-solid fa-check"></i>
+                                    <span>Simpan Nama</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- A. KEAMANAN & AKSES ADMIN -->
+                        <div data-scard="keamanan" class="setting-card bg-rcSurface border border-rcBorder rounded-3xl p-6 sm:p-8 space-y-6">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-rcBorder">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-10 h-10 rounded-2xl bg-rcOrange/15 text-rcOrange flex items-center justify-center">
+                                        <i class="fa-solid fa-shield-halved"></i>
+                                    </span>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-white">A. Keamanan & Akses Admin</h3>
+                                        <p class="text-xs text-rcMuted font-sans">Ganti 6-digit PIN login portal dan atur penguncian sesi otomatis</p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onclick="lockAdminPortal()"
+                                    class="pill-btn px-4 py-2 rounded-full bg-rcCard hover:bg-red-500/15 text-zinc-300 hover:text-red-400 border border-rcBorderHover hover:border-red-500/40 text-xs font-bold inline-flex items-center gap-2 self-start sm:self-auto cursor-pointer"
+                                >
+                                    <i class="fa-solid fa-lock"></i>
+                                    <span>Kunci Portal Sekarang</span>
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                                <!-- Change 6-Digit PIN Form -->
+                                <form onsubmit="handleChangeAdminPin(event)" class="lg:col-span-7 p-5 rounded-2xl bg-rcCard border border-rcBorder space-y-4">
+                                    <div class="font-soft font-bold text-sm text-white">Ubah PIN Keamanan Admin (6 Digit)</div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                                        <div>
+                                            <label for="oldPinInput" class="block text-[11px] font-soft font-bold text-zinc-400 mb-1.5">PIN Lama</label>
+                                            <input
+                                                type="password"
+                                                id="oldPinInput"
+                                                maxlength="6"
+                                                inputmode="numeric"
+                                                placeholder="••••••"
+                                                class="w-full px-3.5 py-2.5 rounded-xl bg-rcBlack border border-rcBorderHover text-white text-sm tracking-widest focus:outline-none focus:border-rcOrange"
+                                            >
+                                        </div>
+                                        <div>
+                                            <label for="newPinInput" class="block text-[11px] font-soft font-bold text-zinc-400 mb-1.5">PIN Baru (6 Digit)</label>
+                                            <input
+                                                type="password"
+                                                id="newPinInput"
+                                                maxlength="6"
+                                                inputmode="numeric"
+                                                placeholder="••••••"
+                                                class="w-full px-3.5 py-2.5 rounded-xl bg-rcBlack border border-rcBorderHover text-white text-sm tracking-widest focus:outline-none focus:border-rcOrange"
+                                            >
+                                        </div>
+                                        <div>
+                                            <label for="confirmNewPinInput" class="block text-[11px] font-soft font-bold text-zinc-400 mb-1.5">Konfirmasi PIN Baru</label>
+                                            <input
+                                                type="password"
+                                                id="confirmNewPinInput"
+                                                maxlength="6"
+                                                inputmode="numeric"
+                                                placeholder="••••••"
+                                                class="w-full px-3.5 py-2.5 rounded-xl bg-rcBlack border border-rcBorderHover text-white text-sm tracking-widest focus:outline-none focus:border-rcOrange"
+                                            >
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-3 pt-1">
+                                        <span class="text-[11px] text-zinc-400 font-sans">Gunakan kombinasi 6 angka yang sulit ditebak.</span>
+                                        <button
+                                            type="submit"
+                                            style="background-color: var(--accent, #F38B1C); color: #010101;"
+                                            class="btn-orange-solid pill-btn px-5 py-2.5 rounded-full bg-rcOrange hover:bg-rcOrangeHover text-rcBlack font-bold text-xs cursor-pointer"
+                                        >
+                                            Perbarui PIN
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <!-- Auto-Lock Session Timer -->
+                                <div class="lg:col-span-5 p-5 rounded-2xl bg-rcCard border border-rcBorder flex flex-col justify-between space-y-4">
+                                    <div class="space-y-2">
+                                        <label for="autoLockSelect" class="block font-soft font-bold text-sm text-white">
+                                            Auto-Lock Session Timer
+                                        </label>
+                                        <p class="text-xs text-rcMuted font-sans leading-relaxed">
+                                            Kunci portal secara otomatis jika tidak ada aktivitas di browser selama durasi tertentu.
+                                        </p>
+                                    </div>
+                                    <select
+                                        id="autoLockSelect"
+                                        onchange="saveAutoLockSetting()"
+                                        class="w-full px-4 py-3 rounded-2xl bg-rcBlack border border-rcBorderHover text-white text-sm font-semibold focus:outline-none focus:border-rcOrange"
+                                    >
+                                        <option value="0">Nonaktif</option>
+                                        <option value="15">15 Menit</option>
+                                        <option value="30">30 Menit</option>
+                                        <option value="60">60 Menit</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Master Recovery Key Management (For Lupa PIN) -->
+                            <div class="p-5 rounded-2xl bg-rcCard border border-rcBorder space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                    <div>
+                                        <div class="font-soft font-bold text-sm text-white flex items-center gap-2">
+                                            <i class="fa-solid fa-key text-rcOrange text-xs"></i>
+                                            <span>Kode Pemulihan Utama (Master Recovery Key)</span>
+                                        </div>
+                                        <p class="text-xs text-rcMuted font-sans mt-0.5">
+                                            Simpan kode ini di tempat pribadi Anda untuk memulihkan akses jika suatu saat lupa PIN login.
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onclick="copyRecoveryKey()"
+                                        class="pill-btn px-3.5 py-1.5 rounded-full bg-rcBlack hover:bg-white/10 text-rcOrangeLight border border-rcBorderHover text-xs font-bold inline-flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+                                    >
+                                        <i class="fa-regular fa-copy"></i>
+                                        <span>Salin Kode</span>
+                                    </button>
+                                </div>
+
+                                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                    <div class="relative flex-1">
+                                        <input
+                                            type="password"
+                                            id="settingRecoveryKeyInput"
+                                            placeholder="Minimal 6 karakter..."
+                                            class="w-full pl-4 pr-11 py-2.5 rounded-xl bg-rcBlack border border-rcBorderHover text-white text-sm font-semibold focus:outline-none focus:border-rcOrange"
+                                        >
+                                        <button
+                                            type="button"
+                                            onclick="toggleRecoveryKeyVisibility()"
+                                            class="absolute inset-y-0 right-3.5 flex items-center text-zinc-400 hover:text-rcOrange cursor-pointer"
+                                            aria-label="Tampilkan Kode Pemulihan"
+                                        >
+                                            <i id="recoveryKeyEyeIcon" class="fa-regular fa-eye text-xs"></i>
+                                        </button>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onclick="saveRecoveryKeySetting()"
+                                        style="background-color: var(--accent, #F38B1C); color: #010101;"
+                                        class="btn-orange-solid pill-btn px-5 py-2.5 rounded-full bg-rcOrange hover:bg-rcOrangeHover text-rcBlack font-bold text-xs shrink-0 cursor-pointer"
+                                    >
+                                        Simpan Kode Pemulihan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- B. KONTAK WHATSAPP & BOOKING -->
+                        <div data-scard="whatsapp" class="setting-card bg-rcSurface border border-rcBorder rounded-3xl p-6 sm:p-8 space-y-6">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-rcBorder">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+                                        <i class="fa-brands fa-whatsapp text-lg"></i>
+                                    </span>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-white">B. Kontak WhatsApp & Booking</h3>
+                                        <p class="text-xs text-rcMuted font-sans">Nomor WhatsApp direct, template pesan otomatis, dan status ketersediaan jadwal</p>
+                                    </div>
+                                </div>
+                                <a
+                                    id="testDirectWaLink"
+                                    href="https://wa.me/6289640047789?text=Halo%20Bang%20Rohman%20(Rohman%20Capture)%2C%20tes%20direct%20WA%20dari%20Admin%20Portal."
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="pill-btn px-4 py-2 rounded-full bg-emerald-500/15 hover:bg-emerald-500 text-emerald-300 hover:text-rcBlack border border-emerald-500/35 text-xs font-bold inline-flex items-center gap-2 self-start sm:self-auto"
+                                >
+                                    <i class="fa-brands fa-whatsapp"></i>
+                                    <span>Tes Direct WA</span>
+                                </a>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label for="settingWhatsappNumber" class="block text-xs font-soft font-bold text-zinc-300 mb-2">
+                                        Nomor WhatsApp Tujuan (Default: 089640047789)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="settingWhatsappNumber"
+                                        oninput="updateTestWaHref()"
+                                        placeholder="089640047789"
+                                        class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm font-semibold focus:outline-none focus:border-rcOrange"
+                                    >
+                                </div>
+
+                                <div>
+                                    <label for="settingBookingStatus" class="block text-xs font-soft font-bold text-zinc-300 mb-2">
+                                        Status Open Booking Publik
+                                    </label>
+                                    <select
+                                        id="settingBookingStatus"
+                                        class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm font-semibold focus:outline-none focus:border-rcOrange"
+                                    >
+                                        <option value="Open Booking 2026/2027">Open Booking 2026/2027</option>
+                                        <option value="Slot Terbatas Bulan Ini">Slot Terbatas Bulan Ini</option>
+                                        <option value="Full Booked">Full Booked</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Template Pesan Otomatis WhatsApp + Clickable Variable Chips -->
+                            <div class="space-y-2.5">
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <label for="settingWaTemplate" class="text-xs font-soft font-bold text-zinc-300">
+                                        Template Pesan Otomatis WhatsApp untuk Form Klien
+                                    </label>
+                                    <div class="flex flex-wrap items-center gap-1.5">
+                                        <span class="text-[11px] text-zinc-400 font-soft mr-1">Sisipkan variabel:</span>
+                                        <button type="button" onclick="insertWaVariable('{nama}')" class="pill-btn px-2.5 py-1 rounded-full bg-rcOrange/15 hover:bg-rcOrange text-rcOrangeLight hover:text-rcBlack text-[11px] font-bold cursor-pointer">
+                                            {nama}
+                                        </button>
+                                        <button type="button" onclick="insertWaVariable('{kategori}')" class="pill-btn px-2.5 py-1 rounded-full bg-rcOrange/15 hover:bg-rcOrange text-rcOrangeLight hover:text-rcBlack text-[11px] font-bold cursor-pointer">
+                                            {kategori}
+                                        </button>
+                                        <button type="button" onclick="insertWaVariable('{tanggal}')" class="pill-btn px-2.5 py-1 rounded-full bg-rcOrange/15 hover:bg-rcOrange text-rcOrangeLight hover:text-rcBlack text-[11px] font-bold cursor-pointer">
+                                            {tanggal}
+                                        </button>
+                                        <button type="button" onclick="insertWaVariable('{lokasi}')" class="pill-btn px-2.5 py-1 rounded-full bg-rcOrange/15 hover:bg-rcOrange text-rcOrangeLight hover:text-rcBlack text-[11px] font-bold cursor-pointer">
+                                            {lokasi}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <textarea
+                                    id="settingWaTemplate"
+                                    rows="4"
+                                    class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm focus:outline-none focus:border-rcOrange"
+                                ></textarea>
+                            </div>
+
+                            <!-- Toggle Switch for Floating WhatsApp Button -->
+                            <div class="p-4 rounded-2xl bg-rcCard border border-rcBorder flex items-center justify-between gap-4">
+                                <div>
+                                    <div class="font-soft font-bold text-sm text-white">Tampilkan Tombol Floating WhatsApp di Web Publik</div>
+                                    <p class="text-xs text-rcMuted font-sans">Menampilkan tombol melayang di pojok kanan bawah agar klien cepat chat ke 089640047789</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                                    <input type="checkbox" id="settingFloatingWaToggle" class="sr-only toggle-checkbox" checked>
+                                    <div class="w-11 h-6 bg-zinc-700 rounded-full border border-rcBorderHover transition-colors"></div>
+                                    <span class="toggle-dot absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- C. KONEKSI DATABASE & API (GOOGLE SHEETS / APPS SCRIPT) -->
+                        <div data-scard="database" class="setting-card bg-rcSurface border border-rcBorder rounded-3xl p-6 sm:p-8 space-y-6">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-rcBorder">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-10 h-10 rounded-2xl bg-rcOrange/15 text-rcOrange flex items-center justify-center">
+                                        <i class="fa-solid fa-database"></i>
+                                    </span>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-white">C. Koneksi Database & API (Google Sheets / Apps Script)</h3>
+                                        <p class="text-xs text-rcMuted font-sans">Sambungkan portal admin dengan Google Sheets & Google Drive untuk sinkronisasi cloud</p>
+                                    </div>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                                    <button
+                                        type="button"
+                                        onclick="pushAllToCloud(true)"
+                                        class="pill-btn px-4 py-2 rounded-full bg-rcCard hover:bg-[#191919] text-rcOrangeLight border border-rcOrange/45 hover:border-rcOrange font-bold text-xs inline-flex items-center gap-2 cursor-pointer"
+                                    >
+                                        <i class="fa-solid fa-cloud-arrow-up text-rcOrange"></i>
+                                        <span>Sync Sekarang</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onclick="testApiConnection()"
+                                        style="background-color: var(--accent, #F38B1C); color: #010101;"
+                                        class="btn-orange-solid pill-btn px-4 py-2 rounded-full bg-rcOrange hover:bg-rcOrangeHover text-rcBlack font-bold text-xs inline-flex items-center gap-2 cursor-pointer"
+                                    >
+                                        <i class="fa-solid fa-satellite-dish"></i>
+                                        <span>Tes Koneksi API</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label for="settingApiUrl" class="block text-xs font-soft font-bold text-zinc-300 mb-2">
+                                        URL Endpoint Google Apps Script Web App
+                                    </label>
+                                    <input
+                                        type="url"
+                                        id="settingApiUrl"
+                                        placeholder="https://script.google.com/macros/s/.../exec"
+                                        class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-rcOrange"
+                                    >
+                                </div>
+
+                                <div>
+                                    <label for="settingDriveFolderId" class="block text-xs font-soft font-bold text-zinc-300 mb-2">
+                                        Google Drive Folder ID (Penyimpanan Foto)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="settingDriveFolderId"
+                                        placeholder="Contoh: 1A2bC3dEfGhIjKlMnOpQrStUvWxYz"
+                                        class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-rcOrange"
+                                    >
+                                </div>
+                            </div>
+
+                            <!-- API Test Feedback Box -->
+                            <div id="apiTestStatusBox" class="hidden p-4 rounded-2xl bg-rcCard border border-rcBorder text-xs font-sans"></div>
+
+                            <!-- Helper Copy untuk Sinkronisasi HP / Perangkat Lain -->
+                            <div class="p-4 rounded-2xl bg-rcCard border border-rcBorder flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div class="space-y-0.5">
+                                    <div class="text-xs font-soft font-bold text-white">
+                                        <i class="fa-solid fa-mobile-screen-button text-rcOrange mr-1.5"></i>Sinkronisasi Lintas Perangkat (HP & Klien)
+                                    </div>
+                                    <p class="text-[11px] text-rcMuted font-sans">
+                                        Tempel kode ke <code class="text-zinc-200">index.html</code> sebelum upload ke GitHub agar otomatis tampil di semua HP.
+                                    </p>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2 shrink-0">
+                                    <button
+                                        type="button"
+                                        onclick="copyPublicApiSnippet()"
+                                        class="pill-btn px-4 py-2.5 rounded-full bg-rcBlack hover:bg-rcOrange text-rcOrangeLight hover:text-rcBlack border border-rcOrange/45 font-bold text-xs inline-flex items-center gap-2 cursor-pointer"
+                                    >
+                                        <i class="fa-regular fa-copy"></i>
+                                        <span>Salin Kode CLOUD_API_URL</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- D. IDENTITAS BRAND, LOGO & SEO -->
+                        <div data-scard="brand" class="setting-card bg-rcSurface border border-rcBorder rounded-3xl p-6 sm:p-8 space-y-6">
+                            <div class="flex items-center gap-3 pb-4 border-b border-rcBorder">
+                                <span class="w-10 h-10 rounded-2xl bg-rcOrange/15 text-rcOrange flex items-center justify-center">
+                                    <i class="fa-solid fa-palette"></i>
+                                </span>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">D. Identitas Brand, Logo & SEO</h3>
+                                    <p class="text-xs text-rcMuted font-sans">Sesuaikan warna aksen brand, upload logo custom web, handle Instagram, dan judul meta SEO</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <!-- Accent Color Picker -->
+                                <div class="p-4 rounded-2xl bg-rcCard border border-rcBorder space-y-3">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-soft font-bold text-white">Warna Aksen Utama Brand</span>
+                                        <button type="button" onclick="resetAccentColor()" class="text-[11px] font-bold text-rcOrange hover:underline cursor-pointer">
+                                            Reset #F38B1C
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <input
+                                            type="color"
+                                            id="settingAccentColorPicker"
+                                            value="#F38B1C"
+                                            oninput="handleAccentColorChange(this.value)"
+                                            class="w-11 h-11 rounded-xl bg-rcBlack border border-rcBorderHover cursor-pointer"
+                                        >
+                                        <input
+                                            type="text"
+                                            id="settingAccentHexInput"
+                                            value="#F38B1C"
+                                            oninput="handleAccentHexTyping(this.value)"
+                                            maxlength="7"
+                                            class="flex-1 px-3.5 py-2.5 rounded-xl bg-rcBlack border border-rcBorderHover text-white text-xs font-bold uppercase tracking-wider focus:outline-none focus:border-rcOrange"
+                                        >
+                                    </div>
+                                </div>
+
+                                <!-- Custom Web Logo -->
+                                <div class="p-4 rounded-2xl bg-rcCard border border-rcBorder space-y-3">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-soft font-bold text-white">Logo Custom Website</span>
+                                        <button type="button" onclick="resetCustomLogo()" class="text-[11px] font-bold text-rcOrange hover:underline cursor-pointer">
+                                            Reset Logo Default
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <div class="bg-rcBlack border border-rcOrange/35 px-3 py-2 rounded-xl flex items-center justify-center shrink-0">
+                                            <div class="brand-logo-slot flex items-center justify-center"></div>
+                                        </div>
+                                        <label class="pill-btn cursor-pointer px-4 py-2.5 rounded-full bg-rcBlack hover:bg-rcOrange text-zinc-200 hover:text-rcBlack border border-rcBorderHover text-xs font-bold inline-flex items-center gap-2">
+                                            <i class="fa-solid fa-upload"></i>
+                                            <span>Upload Logo PNG/SVG</span>
+                                            <input type="file" accept="image/*" onchange="handleCustomLogoUpload(event)" class="hidden">
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label for="settingMetaTitle" class="block text-xs font-soft font-bold text-zinc-300 mb-2">
+                                        Judul Tab Browser & SEO (Meta Title)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="settingMetaTitle"
+                                        class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm focus:outline-none focus:border-rcOrange"
+                                    >
+                                </div>
+
+                                <div>
+                                    <label for="settingInstagramHandle" class="block text-xs font-soft font-bold text-zinc-300 mb-2">
+                                        Username Instagram Brand
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="settingInstagramHandle"
+                                        placeholder="@rohmancapture"
+                                        class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm focus:outline-none focus:border-rcOrange"
+                                    >
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="settingMetaDesc" class="block text-xs font-soft font-bold text-zinc-300 mb-2">
+                                    Deskripsi Pencarian Google (Meta Description)
+                                </label>
+                                <textarea
+                                    id="settingMetaDesc"
+                                    rows="2"
+                                    class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm focus:outline-none focus:border-rcOrange"
+                                ></textarea>
+                            </div>
+                        </div>
+
+                        <!-- E. BACKUP, RESTORE & RESET DATA -->
+                        <div data-scard="backup" class="setting-card bg-rcSurface border border-rcBorder rounded-3xl p-6 sm:p-8 space-y-5">
+                            <div class="flex items-center gap-3 pb-4 border-b border-rcBorder">
+                                <span class="w-10 h-10 rounded-2xl bg-rcOrange/15 text-rcOrange flex items-center justify-center">
+                                    <i class="fa-solid fa-box-archive"></i>
+                                </span>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">E. Backup, Restore & Reset Data</h3>
+                                    <p class="text-xs text-rcMuted font-sans">Unduh salinan database dalam format JSON atau pulihkan konfigurasi sebelumnya</p>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-3">
+                                <button
+                                    type="button"
+                                    onclick="exportBackupJson()"
+                                    style="background-color: var(--accent, #F38B1C); color: #010101;"
+                                    class="btn-orange-solid pill-btn px-5 py-3 rounded-full bg-rcOrange text-rcBlack font-bold text-xs inline-flex items-center gap-2 cursor-pointer"
+                                >
+                                    <i class="fa-solid fa-download"></i>
+                                    <span>Export Backup (.JSON)</span>
+                                </button>
+
+                                <label class="pill-btn cursor-pointer px-5 py-3 rounded-full bg-rcCard hover:bg-[#191919] text-white border border-rcBorderHover font-bold text-xs inline-flex items-center gap-2">
+                                    <i class="fa-solid fa-file-import text-rcOrange"></i>
+                                    <span>Restore dari .JSON</span>
+                                    <input type="file" accept=".json,application/json" onchange="importBackupJson(event)" class="hidden">
+                                </label>
+
+                                <button
+                                    type="button"
+                                    onclick="confirmResetDefault()"
+                                    class="pill-btn px-5 py-3 rounded-full bg-rcCard hover:bg-red-500/15 text-zinc-300 hover:text-red-400 border border-rcBorderHover hover:border-red-500/40 font-bold text-xs inline-flex items-center gap-2 cursor-pointer"
+                                >
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                    <span>Reset Default Lokal</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         MODAL A: ADD / EDIT PORTFOLIO ITEM (MULTI-PHOTO SLIDES)
+    ========================================================== -->
+    <div id="portfolioFormModal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+        <div class="w-full max-w-2xl bg-rcSurface border border-rcBorderHover rounded-3xl p-6 sm:p-8 shadow-panel-dark my-8 relative">
+            <div class="flex items-center justify-between pb-4 mb-5 border-b border-rcBorder">
+                <div class="flex items-center gap-3">
+                    <span class="w-10 h-10 rounded-2xl bg-rcOrange/15 border border-rcOrange/40 text-rcOrange flex items-center justify-center">
+                        <i id="portfolioModalIcon" class="fa-solid fa-plus"></i>
+                    </span>
+                    <div>
+                        <h3 id="portfolioModalTitle" class="text-lg sm:text-xl font-bold text-white">Tambah Karya Portofolio Baru</h3>
+                        <p class="text-xs text-rcMuted font-sans">Bisa pilih banyak foto sekaligus untuk dijadikan galeri slide</p>
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    onclick="closePortfolioFormModal()"
+                    class="pill-btn w-9 h-9 rounded-full bg-rcCard hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer"
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="portfolioForm" onsubmit="savePortfolioItem(event)" class="space-y-4">
+                <input type="hidden" id="portfolioItemId" value="">
+
+                <!-- Multi-Photo Upload & Preview Box -->
+                <div class="p-4 rounded-2xl bg-rcCard border border-rcBorderHover space-y-3.5">
+                    <div class="flex flex-col sm:flex-row items-center gap-4">
+                        <img
+                            id="portfolioFormImagePreview"
+                            src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=85"
+                            alt="Cover Preview"
+                            referrerpolicy="no-referrer"
+                            onerror="handleDriveImgError(this)"
+                            class="w-24 h-24 rounded-2xl object-cover border-2 border-rcOrange shrink-0 bg-rcBlack"
+                        >
+                        <div class="flex-1 w-full space-y-2 text-center sm:text-left">
+                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                                <span class="font-soft font-bold text-sm text-white">Foto Slide Portofolio</span>
+                                <span id="portfolioSlideCountBadge" class="px-2.5 py-0.5 rounded-full bg-rcOrange/15 text-rcOrangeLight text-[11px] font-bold">
+                                    1 Slide Foto
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-rcMuted font-sans">
+                                Pilih banyak foto sekaligus (otomatis dikompres & diunggah satu per satu ke Google Drive).
+                            </p>
+                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                                <label style="background-color: var(--accent, #F38B1C); color: #010101;" class="btn-orange-solid pill-btn cursor-pointer px-4 py-2 rounded-full bg-rcOrange text-rcBlack font-bold text-xs inline-flex items-center gap-2">
+                                    <i class="fa-solid fa-images"></i>
+                                    <span>Pilih Banyak Foto</span>
+                                    <input type="file" id="portfolioFileInput" accept="image/*" multiple onchange="handlePortfolioFileSelect(event)" class="hidden">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slides Thumbnail Grid -->
+                    <div id="portfolioSlidesPreviewGrid" class="grid grid-cols-4 sm:grid-cols-6 gap-2 pt-2 border-t border-rcBorder">
+                        <!-- Rendered dynamically -->
+                    </div>
+
+                    <!-- Add Slide via URL -->
+                    <div class="flex items-center gap-2">
+                        <input
+                            type="url"
+                            id="portfolioImageUrlInput"
+                            placeholder="Atau tambah slide via URL foto (https://...)"
+                            class="flex-1 px-3.5 py-2 rounded-xl bg-rcBlack border border-rcBorderHover text-zinc-200 placeholder-zinc-500 text-xs focus:outline-none focus:border-rcOrange"
+                        >
+                        <button
+                            type="button"
+                            onclick="addPortfolioImageUrl()"
+                            class="pill-btn px-3.5 py-2 rounded-xl bg-rcBlack hover:bg-rcOrange text-rcOrangeLight hover:text-rcBlack border border-rcOrange/45 text-xs font-bold shrink-0 cursor-pointer"
+                        >
+                            + URL
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="portfolioTitleInput" class="block text-xs font-soft font-bold text-zinc-300 mb-1.5">
+                            Judul Sesi / Karya *
+                        </label>
+                        <input
+                            type="text"
+                            id="portfolioTitleInput"
+                            required
+                            placeholder="Contoh: Senja Hangat Raka & Nadya"
+                            class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm focus:outline-none focus:border-rcOrange"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="portfolioCategoryInput" class="block text-xs font-soft font-bold text-zinc-300 mb-1.5">
+                            Kategori Filter *
+                        </label>
+                        <select
+                            id="portfolioCategoryInput"
+                            class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm focus:outline-none focus:border-rcOrange"
+                        >
+                            <!-- Rendered dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="portfolioLocationInput" class="block text-xs font-soft font-bold text-zinc-300 mb-1.5">
+                            Lokasi Pemotretan *
+                        </label>
+                        <input
+                            type="text"
+                            id="portfolioLocationInput"
+                            required
+                            placeholder="Contoh: Taman Ria Rio, Jakarta Timur"
+                            class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm focus:outline-none focus:border-rcOrange"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="portfolioDateInput" class="block text-xs font-soft font-bold text-zinc-300 mb-1.5">
+                            Tahun / Info Teknis
+                        </label>
+                        <input
+                            type="text"
+                            id="portfolioDateInput"
+                            value="2026"
+                            placeholder="Contoh: 2026 • 85mm f/1.8"
+                            class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm focus:outline-none focus:border-rcOrange"
+                        >
+                    </div>
+                </div>
+
+                <div>
+                    <label for="portfolioDescInput" class="block text-xs font-soft font-bold text-zinc-300 mb-1.5">
+                        Cerita Singkat di Balik Sesi Foto
+                    </label>
+                    <textarea
+                        id="portfolioDescInput"
+                        rows="3"
+                        placeholder="Ceritakan suasana pemotretan, konsep, atau momen berkesan klien..."
+                        class="w-full px-4 py-3 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-sm focus:outline-none focus:border-rcOrange"
+                    ></textarea>
+                </div>
+
+                <div class="pt-3 border-t border-rcBorder flex items-center justify-end gap-3">
+                    <button
+                        type="button"
+                        onclick="closePortfolioFormModal()"
+                        class="pill-btn px-5 py-3 rounded-full bg-rcCard hover:bg-white/10 text-zinc-300 text-xs font-bold cursor-pointer"
+                    >
+                        Batal
+                    </button>
+                    <button
+                        type="submit"
+                        id="portfolioSaveSubmitBtn"
+                        style="background-color: var(--accent, #F38B1C); color: #010101;"
+                        class="btn-orange-solid pill-btn px-6 py-3 rounded-full bg-rcOrange text-rcBlack font-bold text-xs sm:text-sm shadow-orange-glow inline-flex items-center gap-2 cursor-pointer"
+                    >
+                        <i id="portfolioSaveBtnIcon" class="fa-solid fa-check"></i>
+                        <span id="portfolioSaveBtnText">Simpan ke Galeri</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         MODAL B: CATEGORY MANAGER MODAL
+    ========================================================== -->
+    <div id="categoryManagerModal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+        <div class="w-full max-w-lg bg-rcSurface border border-rcBorderHover rounded-3xl p-6 sm:p-7 shadow-panel-dark my-8">
+            <div class="flex items-center justify-between pb-4 mb-5 border-b border-rcBorder">
+                <div>
+                    <h3 class="text-lg font-bold text-white">Kelola Kategori Filter Portofolio</h3>
+                    <p class="text-xs text-rcMuted font-sans">Tambah atau hapus tombol kategori di galeri publik</p>
+                </div>
+                <button
+                    type="button"
+                    onclick="closeCategoryManagerModal()"
+                    class="pill-btn w-9 h-9 rounded-full bg-rcCard hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer"
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form onsubmit="handleAddCategory(event)" class="space-y-3 mb-6">
+                <input type="hidden" id="newCategoryIconInput" value="fa-camera">
+                <div class="flex items-center gap-2">
+                    <input
+                        type="text"
+                        id="newCategoryNameInput"
+                        required
+                        placeholder="Nama kategori baru (misal: Produk / Wedding)"
+                        class="flex-1 px-4 py-2.5 rounded-2xl bg-rcCard border border-rcBorderHover text-white text-xs sm:text-sm focus:outline-none focus:border-rcOrange"
+                    >
+                    <button
+                        type="submit"
+                        style="background-color: var(--accent, #F38B1C); color: #010101;"
+                        class="btn-orange-solid pill-btn px-5 py-2.5 rounded-full bg-rcOrange text-rcBlack font-bold text-xs shrink-0 cursor-pointer"
+                    >
+                        + Tambah
+                    </button>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="text-[11px] text-zinc-400 mr-1">Ikon:</span>
+                    <button type="button" data-icon="fa-camera" onclick="selectNewCategoryIcon('fa-camera')" class="cat-icon-opt w-8 h-8 rounded-xl bg-rcCard border border-rcOrange text-rcOrange text-xs cursor-pointer"><i class="fa-solid fa-camera"></i></button>
+                    <button type="button" data-icon="fa-heart" onclick="selectNewCategoryIcon('fa-heart')" class="cat-icon-opt w-8 h-8 rounded-xl bg-rcCard border border-rcBorderHover text-zinc-300 text-xs cursor-pointer"><i class="fa-solid fa-heart"></i></button>
+                    <button type="button" data-icon="fa-graduation-cap" onclick="selectNewCategoryIcon('fa-graduation-cap')" class="cat-icon-opt w-8 h-8 rounded-xl bg-rcCard border border-rcBorderHover text-zinc-300 text-xs cursor-pointer"><i class="fa-solid fa-graduation-cap"></i></button>
+                    <button type="button" data-icon="fa-bolt" onclick="selectNewCategoryIcon('fa-bolt')" class="cat-icon-opt w-8 h-8 rounded-xl bg-rcCard border border-rcBorderHover text-zinc-300 text-xs cursor-pointer"><i class="fa-solid fa-bolt"></i></button>
+                    <button type="button" data-icon="fa-ring" onclick="selectNewCategoryIcon('fa-ring')" class="cat-icon-opt w-8 h-8 rounded-xl bg-rcCard border border-rcBorderHover text-zinc-300 text-xs cursor-pointer"><i class="fa-solid fa-ring"></i></button>
+                    <button type="button" data-icon="fa-users" onclick="selectNewCategoryIcon('fa-users')" class="cat-icon-opt w-8 h-8 rounded-xl bg-rcCard border border-rcBorderHover text-zinc-300 text-xs cursor-pointer"><i class="fa-solid fa-users"></i></button>
+                </div>
+            </form>
+
+            <div class="space-y-2.5">
+                <div class="flex items-center justify-between text-xs font-bold text-zinc-400">
+                    <span>Daftar Kategori Aktif</span>
+                    <span id="totalCategoriesCountLabel" class="text-rcOrange">4 Kategori</span>
+                </div>
+                <div id="activeCategoriesList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         MODAL C: ADD / EDIT CONTENT POST (ARTIKEL & VIDEO BTS)
+    ========================================================== -->
+    <div id="contentPostModal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+        <div class="w-full max-w-2xl bg-rcSurface border border-rcBorderHover rounded-3xl p-6 sm:p-8 shadow-panel-dark my-8">
+            <div class="flex items-center justify-between pb-4 mb-5 border-b border-rcBorder">
+                <h3 id="contentModalTitle" class="text-lg sm:text-xl font-bold text-white">Tambah Artikel / Tips Baru</h3>
+                <button
+                    type="button"
+                    onclick="closeContentFormModal()"
+                    class="pill-btn w-9 h-9 rounded-full bg-rcCard hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer"
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form onsubmit="saveContentPost(event)" class="space-y-4">
+                <input type="hidden" id="contentPostId" value="">
+                <input type="hidden" id="contentPostTypeInput" value="Artikel">
+
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button" id="typeBtnArtikel" onclick="selectContentFormType('Artikel')" class="pill-btn py-3 px-4 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-newspaper"></i>
+                        <span>Artikel / Tips</span>
+                    </button>
+                    <button type="button" id="typeBtnVideo" onclick="selectContentFormType('Video')" class="pill-btn py-3 px-4 rounded-2xl bg-rcCard text-zinc-300 font-bold text-xs sm:text-sm border border-rcBorderHover flex items-center justify-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-play"></i>
+                        <span>Video / BTS</span>
+                    </button>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-rcCard border border-rcBorderHover flex flex-col sm:flex-row items-center gap-4">
+                    <img id="contentCoverPreview" src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=85" alt="Thumbnail" referrerpolicy="no-referrer" onerror="handleDriveImgError(this)" class="w-28 h-20 rounded-xl object-cover border border-rcOrange/50 shrink-0">
+                    <div class="flex-1 w-full space-y-2">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <label style="background-color: var(--accent, #F38
