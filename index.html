@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+html_code = """<!DOCTYPE html>
 <html lang="id" class="dark scroll-smooth">
 <head>
     <meta charset="UTF-8">
@@ -48,19 +48,19 @@
         };
 
         /**
-- Mengekstrak File ID Google Drive dari berbagai format URL umum
+         * Mengekstrak File ID Google Drive dari berbagai format URL umum
          */
         function extractDriveFileId(url) {
             try {
                 const raw = String(url || '').trim();
                 if (!raw) return '';
                 const patterns = [
-                    /lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/,
-                    /drive\.usercontent\.google\.com\/download\?.*id=([a-zA-Z0-9_-]+)/,
-                    /drive\.google\.com\/thumbnail\?.*id=([a-zA-Z0-9_-]+)/,
-                    /drive\.google\.com\/uc\?.*id=([a-zA-Z0-9_-]+)/,
-                    /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/,
-                    /drive\.google\.com\/open\?.*id=([a-zA-Z0-9_-]+)/,
+                    /lh3\\.googleusercontent\\.com\\/d\\/([a-zA-Z0-9_-]+)/,
+                    /drive\\.usercontent\\.google\\.com\\/download\\?.*id=([a-zA-Z0-9_-]+)/,
+                    /drive\\.google\\.com\\/thumbnail\\?.*id=([a-zA-Z0-9_-]+)/,
+                    /drive\\.google\\.com\\/uc\\?.*id=([a-zA-Z0-9_-]+)/,
+                    /drive\\.google\\.com\\/file\\/d\\/([a-zA-Z0-9_-]+)/,
+                    /drive\\.google\\.com\\/open\\?.*id=([a-zA-Z0-9_-]+)/,
                     /[?&]id=([a-zA-Z0-9_-]+)/
                 ];
                 for (let i = 0; i < patterns.length; i++) {
@@ -74,7 +74,7 @@
         }
 
         /**
-- Mengubah link Google Drive menjadi URL CDN yang stabil di browser HP & laptop
+         * Mengubah link Google Drive menjadi URL CDN yang stabil di browser HP & laptop
          */
         function resolveDriveImageUrl(url) {
             try {
@@ -91,7 +91,7 @@
         }
 
         /**
-- Fallback otomatis antar-mirror Google Drive jika salah satu endpoint gagal dimuat
+         * Fallback otomatis antar-mirror Google Drive jika salah satu endpoint gagal dimuat
          */
         function handleDriveImgError(imgEl, customFallback) {
             try {
@@ -203,6 +203,31 @@
             transform: scale(1.05);
         }
 
+        /* Smooth Scroll Reveal Animations */
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(26px);
+            transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1), transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: opacity, transform;
+        }
+
+        .reveal-on-scroll.reveal-scale {
+            transform: translateY(22px) scale(0.97);
+        }
+
+        .reveal-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal-on-scroll {
+                opacity: 1 !important;
+                transform: none !important;
+                transition: none !important;
+            }
+        }
+
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -288,7 +313,7 @@
     <section id="beranda" class="bg-rc-ambient pt-10 pb-16 sm:pt-16 sm:pb-24 border-b border-rcBorder">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-                <div class="lg:col-span-7 space-y-6">
+                <div class="lg:col-span-7 space-y-6 reveal-on-scroll">
                     <div class="flex flex-wrap items-center gap-2.5">
                         <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rcSurface border border-rcOrange/40 text-rcOrangeLight text-xs font-bold">
                             <span class="w-2 h-2 rounded-full bg-rcOrange animate-pulse"></span>
@@ -342,7 +367,7 @@
                     </div>
                 </div>
 
-                <div class="lg:col-span-5">
+                <div class="lg:col-span-5 reveal-on-scroll reveal-scale" style="transition-delay: 120ms;">
                     <div class="max-w-md mx-auto bg-rcSurface border border-rcBorderHover rounded-[2rem] p-4 shadow-orange-subtle relative">
                         <div class="relative aspect-[4/4.3] rounded-3xl overflow-hidden bg-rcCard">
                             <img
@@ -388,7 +413,7 @@
     ========================================================== -->
     <section id="tentang" class="py-16 sm:py-24 border-b border-rcBorder">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
-            <div class="bg-rcSurface border border-rcBorder rounded-[2rem] p-7 sm:p-10 lg:p-12">
+            <div class="bg-rcSurface border border-rcBorder rounded-[2rem] p-7 sm:p-10 lg:p-12 reveal-on-scroll">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                     <div class="lg:col-span-4 space-y-3">
                         <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rcOrange/15 text-rcOrangeLight text-xs font-bold">
@@ -423,7 +448,7 @@
             </div>
 
             <div id="layanan" class="space-y-8 pt-2">
-                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 reveal-on-scroll">
                     <div class="space-y-2">
                         <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rcOrange/15 text-rcOrangeLight text-xs font-bold">
                             <i class="fa-solid fa-camera"></i>
@@ -437,28 +462,28 @@
                 </div>
 
                 <div id="servicesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                    <div class="bg-rcSurface border border-rcBorder hover:border-rcOrange/45 rounded-3xl p-6 space-y-3.5 transition group">
+                    <div class="bg-rcSurface border border-rcBorder hover:border-rcOrange/45 rounded-3xl p-6 space-y-3.5 transition group reveal-on-scroll">
                         <span class="w-11 h-11 rounded-2xl bg-rcOrange/15 group-hover:bg-rcOrange text-rcOrange group-hover:text-rcBlack flex items-center justify-center text-base transition">
                             <i class="fa-solid fa-heart"></i>
                         </span>
                         <h3 class="text-lg font-bold text-white">Prewedding</h3>
                         <p class="text-xs sm:text-sm text-rcMuted font-sans leading-relaxed">Abadikan chemistry kalian dengan konsep casual outdoor, indoor studio, maupun tradisional dengan arahan gaya yang santai.</p>
                     </div>
-                    <div class="bg-rcSurface border border-rcBorder hover:border-rcOrange/45 rounded-3xl p-6 space-y-3.5 transition group">
+                    <div class="bg-rcSurface border border-rcBorder hover:border-rcOrange/45 rounded-3xl p-6 space-y-3.5 transition group reveal-on-scroll" style="transition-delay: 80ms;">
                         <span class="w-11 h-11 rounded-2xl bg-rcOrange/15 group-hover:bg-rcOrange text-rcOrange group-hover:text-rcBlack flex items-center justify-center text-base transition">
                             <i class="fa-solid fa-graduation-cap"></i>
                         </span>
                         <h3 class="text-lg font-bold text-white">Wisuda</h3>
                         <p class="text-xs sm:text-sm text-rcMuted font-sans leading-relaxed">Rayakan hari kelulusanmu bersama orang tua, keluarga, dan sahabat dengan foto yang hangat dan penuh kebanggaan.</p>
                     </div>
-                    <div class="bg-rcSurface border border-rcBorder hover:border-rcOrange/45 rounded-3xl p-6 space-y-3.5 transition group">
+                    <div class="bg-rcSurface border border-rcBorder hover:border-rcOrange/45 rounded-3xl p-6 space-y-3.5 transition group reveal-on-scroll" style="transition-delay: 160ms;">
                         <span class="w-11 h-11 rounded-2xl bg-rcOrange/15 group-hover:bg-rcOrange text-rcOrange group-hover:text-rcBlack flex items-center justify-center text-base transition">
                             <i class="fa-solid fa-bolt"></i>
                         </span>
                         <h3 class="text-lg font-bold text-white">Event</h3>
                         <p class="text-xs sm:text-sm text-rcMuted font-sans leading-relaxed">Liputan dokumentasi profesional untuk acara komunitas, gathering kantor, ulang tahun, seminar, maupun peluncuran produk.</p>
                     </div>
-                    <div class="bg-rcSurface border border-rcBorder hover:border-rcOrange/45 rounded-3xl p-6 space-y-3.5 transition group">
+                    <div class="bg-rcSurface border border-rcBorder hover:border-rcOrange/45 rounded-3xl p-6 space-y-3.5 transition group reveal-on-scroll" style="transition-delay: 240ms;">
                         <span class="w-11 h-11 rounded-2xl bg-rcOrange/15 group-hover:bg-rcOrange text-rcOrange group-hover:text-rcBlack flex items-center justify-center text-base transition">
                             <i class="fa-solid fa-ring"></i>
                         </span>
@@ -475,7 +500,7 @@
     ========================================================== -->
     <section id="portofolio" class="py-16 sm:py-24 border-b border-rcBorder">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-9">
-            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 reveal-on-scroll">
                 <div class="space-y-2">
                     <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rcOrange/15 text-rcOrangeLight text-xs font-bold">
                         <i class="fa-solid fa-images"></i>
@@ -493,7 +518,7 @@
             <div id="portfolioGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
             <!-- Load More / Collapse Controls (Desktop 3x3 = 9 Awal, HP = 6 Awal) -->
-            <div id="portfolioLoadMoreWrapper" class="hidden pt-4 flex flex-col items-center gap-3">
+            <div id="portfolioLoadMoreWrapper" class="hidden pt-4 flex flex-col items-center gap-3 reveal-on-scroll">
                 <p id="portfolioShownCounter" class="text-xs text-rcMuted font-soft"></p>
                 <div class="flex flex-wrap items-center justify-center gap-3">
                     <button
@@ -525,7 +550,7 @@
     ========================================================== -->
     <section id="jurnal" class="py-16 sm:py-24 border-b border-rcBorder">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-9">
-            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 reveal-on-scroll">
                 <div class="space-y-2">
                     <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rcOrange/15 text-rcOrangeLight text-xs font-bold">
                         <i class="fa-solid fa-clapperboard"></i>
@@ -579,7 +604,7 @@
     ========================================================== -->
     <section id="kontak" class="py-16 sm:py-24">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-rcSurface border border-rcBorderHover rounded-[2rem] p-7 sm:p-10 lg:p-12 shadow-orange-subtle">
+            <div class="bg-rcSurface border border-rcBorderHover rounded-[2rem] p-7 sm:p-10 lg:p-12 shadow-orange-subtle reveal-on-scroll">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
                     <div class="lg:col-span-5 space-y-6">
                         <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rcOrange/15 text-rcOrangeLight text-xs font-bold">
@@ -715,7 +740,7 @@
 7. FOOTER & FLOATING WHATSAPP BUTTON
     ========================================================== -->
     <footer class="border-t border-rcBorder bg-rcSurface/60 py-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 reveal-on-scroll">
             <div class="flex items-center gap-3">
                 <div class="bg-rcCard border border-rcOrange/35 px-3 py-1.5 rounded-xl flex items-center justify-center">
                     <div class="brand-logo-wrap flex items-center justify-center">
@@ -922,6 +947,7 @@
         let lightboxSlides = [];
         let lightboxCurrentIndex = 0;
         let currentLightboxItem = null;
+        let scrollRevealObserver = null;
 
         let activeSiteContent = {
             heroBadge: 'Fotografer Jakarta Timur',
@@ -937,7 +963,7 @@
         let activePublicSettings = {
             ownerName: 'Rohman',
             whatsappNumber: '089640047789',
-            waTemplate: "Halo Bang Rohman (Rohman Capture)! 👋\nPerkenalkan gue *{nama}*, mau tanya jadwal & booking sesi foto:\n\n• *Kategori:* {kategori}\n• *Tanggal:* {tanggal}\n• *Lokasi:* {lokasi}\n\nTerima kasih bro!",
+            waTemplate: "Halo Bang Rohman (Rohman Capture)! 👋\\nPerkenalkan gue *{nama}*, mau tanya jadwal & booking sesi foto:\\n\\n• *Kategori:* {kategori}\\n• *Tanggal:* {tanggal}\\n• *Lokasi:* {lokasi}\\n\\nTerima kasih bro!",
             bookingStatus: 'Open Booking 2026/2027',
             floatingWaEnabled: true,
             floatingWaText: 'Chat WhatsApp',
@@ -1070,7 +1096,7 @@
                 topic: "Spot Foto Jaktim",
                 title: "5 Spot Foto Prewedding & Wisuda Favorit di Jakarta Timur",
                 summary: "Rekomendasi lokasi outdoor estetik dengan cahaya golden hour terbaik di sekitar Jakarta Timur.",
-                body: "Jakarta Timur punya banyak sudut menarik yang cocok buat sesi prewedding casual maupun foto wisuda bareng keluarga.\n\n1. Taman Waduk Ria Rio — Punya jalur pedestrian luas dan pantulan cahaya matahari sore di tepi danau yang hangat.\n2. Hutan Kota Cawang & Halim — Nuansa pepohonan rindang yang bikin foto terasa adem dan natural.\n3. Area Kampus UNJ Rawamangun — Spot klasik penuh kenangan buat para wisudawan bersama orang tua dan sahabat.\n4. Taman Mini (TMII) Revitalisasi — Arsitektur modern dan taman terbuka yang rapi untuk sesi pasangan.\n5. Cafe & Studio Klasik Cipinang — Pilihan aman kalau cuaca mendung atau ingin konsep intimate indoor.",
+                body: "Jakarta Timur punya banyak sudut menarik yang cocok buat sesi prewedding casual maupun foto wisuda bareng keluarga.\\n\\n1. Taman Waduk Ria Rio — Punya jalur pedestrian luas dan pantulan cahaya matahari sore di tepi danau yang hangat.\\n2. Hutan Kota Cawang & Halim — Nuansa pepohonan rindang yang bikin foto terasa adem dan natural.\\n3. Area Kampus UNJ Rawamangun — Spot klasik penuh kenangan buat para wisudawan bersama orang tua dan sahabat.\\n4. Taman Mini (TMII) Revitalisasi — Arsitektur modern dan taman terbuka yang rapi untuk sesi pasangan.\\n5. Cafe & Studio Klasik Cipinang — Pilihan aman kalau cuaca mendung atau ingin konsep intimate indoor.",
                 thumbnail: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=85",
                 videoUrl: "",
                 metaBadge: "3 Menit Baca",
@@ -1094,7 +1120,7 @@
                 topic: "Tips & Edukasi",
                 title: "Tips Memilih Warna Outfit Couple & Keluarga Supaya Hasil Foto Warm",
                 summary: "Panduan simpel memadukan warna pakaian agar selaras dengan tone hangat khas Rohman Capture.",
-                body: "Pemilihan warna baju punya pengaruh besar ke hasil akhir foto. Supaya warna kulit tetap cerah dan tone foto terlihat timeless:\n\n• Pilih warna earth-tone seperti krem, putih gading, cokelat susu, olive, atau navy.\n• Hindari motif garis terlalu rapat atau logo besar di bagian dada agar fokus tetap pada ekspresi wajah.\n• Untuk sesi wisuda keluarga, cukup samakan nuansa warna (misalnya pastel atau netral) tanpa harus seragam persis.",
+                body: "Pemilihan warna baju punya pengaruh besar ke hasil akhir foto. Supaya warna kulit tetap cerah dan tone foto terlihat timeless:\\n\\n• Pilih warna earth-tone seperti krem, putih gading, cokelat susu, olive, atau navy.\\n• Hindari motif garis terlalu rapat atau logo besar di bagian dada agar fokus tetap pada ekspresi wajah.\\n• Untuk sesi wisuda keluarga, cukup samakan nuansa warna (misalnya pastel atau netral) tanpa harus seragam persis.",
                 thumbnail: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&w=800&q=85",
                 videoUrl: "",
                 metaBadge: "4 Menit Baca",
@@ -1106,7 +1132,7 @@
                 topic: "Panduan Wisuda",
                 title: "Persiapan Foto Wisuda Bareng Keluarga Agar Sesi Lancar & Bebas Antre",
                 summary: "Tips mengatur jadwal sesi outdoor kampus setelah prosesi wisuda supaya semua anggota keluarga kebagian momen terbaik.",
-                body: "Hari wisuda biasanya padat dengan jadwal prosesi di dalam gedung. Supaya sesi foto wisuda bareng keluarga tetap nyaman dan hasilnya maksimal:\n\n1. Booking jam sesi sekitar 30-45 menit sebelum atau sesudah acara resmi selesai.\n2. Siapkan selempang gelar, buket bunga, atau topi toga cadangan dalam satu tas khusus agar mudah diambil.\n3. Mulai dari foto formasi lengkap keluarga inti terlebih dahulu, baru lanjut ke sesi solo dan bareng sahabat seangkatan.",
+                body: "Hari wisuda biasanya padat dengan jadwal prosesi di dalam gedung. Supaya sesi foto wisuda bareng keluarga tetap nyaman dan hasilnya maksimal:\\n\\n1. Booking jam sesi sekitar 30-45 menit sebelum atau sesudah acara resmi selesai.\\n2. Siapkan selempang gelar, buket bunga, atau topi toga cadangan dalam satu tas khusus agar mudah diambil.\\n3. Mulai dari foto formasi lengkap keluarga inti terlebih dahulu, baru lanjut ke sesi solo dan bareng sahabat seangkatan.",
                 thumbnail: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=85",
                 videoUrl: "",
                 metaBadge: "3 Menit Baca",
@@ -1118,7 +1144,7 @@
                 topic: "Engagement",
                 title: "Checklist Detail Penting saat Acara Lamaran (Engagement) di Rumah",
                 summary: "Hal-hal kecil yang sering terlewat saat acara lamaran di rumah agar dokumentasi tetap rapi dan hangat.",
-                body: "Acara lamaran di rumah punya suasana intim yang sangat hangat. Agar hasil foto dokumentasi tetap bersih dan estetik:\n\n• Pastikan area backdrop utama mendapat cahaya cukup dan bebas dari barang-barang yang menumpuk di sudut ruangan.\n• Siapkan kotak cincin dan seserahan di meja yang mudah dijangkau untuk sesi foto detail sebelum acara dimulai.\n• Sisihkan waktu 10-15 menit setelah acara ramah tamah untuk sesi potret berdua di teras atau taman rumah.",
+                body: "Acara lamaran di rumah punya suasana intim yang sangat hangat. Agar hasil foto dokumentasi tetap bersih dan estetik:\\n\\n• Pastikan area backdrop utama mendapat cahaya cukup dan bebas dari barang-barang yang menumpuk di sudut ruangan.\\n• Siapkan kotak cincin dan seserahan di meja yang mudah dijangkau untuk sesi foto detail sebelum acara dimulai.\\n• Sisihkan waktu 10-15 menit setelah acara ramah tamah untuk sesi potret berdua di teras atau taman rumah.",
                 thumbnail: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&w=800&q=85",
                 videoUrl: "",
                 metaBadge: "4 Menit Baca",
@@ -1130,13 +1156,43 @@
                 topic: "Lighting & Waktu",
                 title: "Memilih Jam Pemotretan Outdoor: Pagi Cerah vs Golden Hour Sore",
                 summary: "Perbandingan karakter cahaya pagi dan sore hari di Jakarta untuk membantu lo menentukan waktu sesi foto.",
-                body: "Cahaya alami adalah kunci utama foto outdoor yang hidup:\n\n• Sesi Pagi (06.30 - 09.00 WIB): Udara masih sejuk, lokasi taman cenderung lebih sepi, dan cahaya matahari pagi memberikan kesan segar serta bersih.\n• Sesi Sore / Golden Hour (15.30 - 17.45 WIB): Cahaya matahari yang rendah menghasilkan warna keemasan yang hangat dan dramatis, sangat cocok untuk konsep romantis dan casual.",
+                body: "Cahaya alami adalah kunci utama foto outdoor yang hidup:\\n\\n• Sesi Pagi (06.30 - 09.00 WIB): Udara masih sejuk, lokasi taman cenderung lebih sepi, dan cahaya matahari pagi memberikan kesan segar serta bersih.\\n• Sesi Sore / Golden Hour (15.30 - 17.45 WIB): Cahaya matahari yang rendah menghasilkan warna keemasan yang hangat dan dramatis, sangat cocok untuk konsep romantis dan casual.",
                 thumbnail: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=85",
                 videoUrl: "",
                 metaBadge: "3 Menit Baca",
                 date: "01 Nov 2026"
             }
         ];
+
+        function initScrollRevealObserver() {
+            if (!('IntersectionObserver' in window)) {
+                document.querySelectorAll('.reveal-on-scroll').forEach(el => el.classList.add('is-visible'));
+                return;
+            }
+            if (!scrollRevealObserver) {
+                scrollRevealObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-visible');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    threshold: 0.08,
+                    rootMargin: '0px 0px -30px 0px'
+                });
+            }
+            refreshScrollRevealElements();
+        }
+
+        function refreshScrollRevealElements(rootContainer = document) {
+            const elements = rootContainer.querySelectorAll('.reveal-on-scroll:not(.is-visible)');
+            if (!scrollRevealObserver) {
+                elements.forEach(el => el.classList.add('is-visible'));
+                return;
+            }
+            elements.forEach(el => scrollRevealObserver.observe(el));
+        }
 
         function escapeHtml(str) {
             return String(str || '')
@@ -1148,7 +1204,7 @@
         }
 
         function normalizeWaNumber(raw) {
-            let digits = String(raw || '').replace(/\D/g, '');
+            let digits = String(raw || '').replace(/\\D/g, '');
             if (digits.startsWith('0')) digits = '62' + digits.slice(1);
             if (!digits) digits = '6289640047789';
             return digits;
@@ -1304,8 +1360,8 @@
             if (!grid) return;
             const list = Array.isArray(activeServices) && activeServices.length > 0 ? activeServices : [];
             if (list.length === 0) return;
-            grid.innerHTML = list.map(svc => `
-                <div class="bg-rcSurface border border-rcBorder hover:border-rcOrange/45 rounded-3xl p-6 space-y-3.5 transition group">
+            grid.innerHTML = list.map((svc, idx) => `
+                <div class="bg-rcSurface border border-rcBorder hover:border-rcOrange/45 rounded-3xl p-6 space-y-3.5 transition group reveal-on-scroll" style="transition-delay: ${(idx % 4) * 80}ms;">
                     <span class="w-11 h-11 rounded-2xl bg-rcOrange/15 group-hover:bg-rcOrange text-rcOrange group-hover:text-rcBlack flex items-center justify-center text-base transition">
                         <i class="fa-solid ${escapeHtml(svc.icon || 'fa-camera')}"></i>
                     </span>
@@ -1313,6 +1369,7 @@
                     <p class="text-xs sm:text-sm text-rcMuted font-sans leading-relaxed">${escapeHtml(svc.desc)}</p>
                 </div>
             `).join('');
+            refreshScrollRevealElements(grid);
         }
 
         function renderPortfolioFilterBar() {
@@ -1400,7 +1457,7 @@
             if (filtered.length === 0) {
                 if (loadMoreWrap) loadMoreWrap.classList.add('hidden');
                 grid.innerHTML = `
-                    <div class="col-span-full bg-rcSurface border border-rcBorder rounded-3xl p-10 text-center space-y-2">
+                    <div class="col-span-full bg-rcSurface border border-rcBorder rounded-3xl p-10 text-center space-y-2 reveal-on-scroll">
                         <div class="w-12 h-12 rounded-2xl bg-rcOrange/15 text-rcOrange flex items-center justify-center mx-auto text-xl">
                             <i class="fa-regular fa-images"></i>
                         </div>
@@ -1408,6 +1465,7 @@
                         <p class="text-xs text-rcMuted font-sans">Silakan pilih kategori lain untuk melihat hasil pemotretan Rohman Capture.</p>
                     </div>
                 `;
+                refreshScrollRevealElements(grid);
                 return;
             }
 
@@ -1438,21 +1496,24 @@
                             showLessBtn.classList.add('hidden');
                         }
                     }
+                    refreshScrollRevealElements(loadMoreWrap);
                 }
             }
 
-            grid.innerHTML = visibleItems.map(item => {
+            grid.innerHTML = visibleItems.map((item, idx) => {
                 const slides = (Array.isArray(item.images) && item.images.length > 0)
                     ? item.images.filter(Boolean)
                     : (item.image ? [item.image] : []);
                 const rawCover = slides[0] || item.image || '';
                 const coverUrl = resolveDriveImageUrl(rawCover);
                 const storyText = item.story || item.description || '';
+                const staggerDelay = (idx % 3) * 90;
 
                 return `
                     <article
                         onclick="openPortfolioLightbox('${escapeHtml(String(item.id))}')"
-                        class="portfolio-card bg-rcSurface border border-rcBorder hover:border-rcOrange/50 rounded-3xl overflow-hidden cursor-pointer flex flex-col justify-between transition group"
+                        style="transition-delay: ${staggerDelay}ms;"
+                        class="portfolio-card reveal-on-scroll reveal-scale bg-rcSurface border border-rcBorder hover:border-rcOrange/50 rounded-3xl overflow-hidden cursor-pointer flex flex-col justify-between transition group"
                     >
                         <div>
                             <div class="relative aspect-[4/3.8] bg-rcCard overflow-hidden">
@@ -1501,6 +1562,8 @@
                     </article>
                 `;
             }).join('');
+
+            refreshScrollRevealElements(grid);
         }
 
         function openPortfolioLightbox(id) {
@@ -1661,23 +1724,26 @@
 
             if (filtered.length === 0) {
                 grid.innerHTML = `
-                    <div class="col-span-full bg-rcSurface border border-rcBorder rounded-3xl p-10 text-center space-y-2">
+                    <div class="col-span-full bg-rcSurface border border-rcBorder rounded-3xl p-10 text-center space-y-2 reveal-on-scroll">
                         <h3 class="text-base font-bold text-white">Belum Ada Konten di Kategori Ini</h3>
                         <p class="text-xs text-rcMuted font-sans">Silakan pilih filter Semua untuk membaca tips & video BTS terbaru.</p>
                     </div>
                 `;
+                refreshScrollRevealElements(grid);
                 return;
             }
 
-            grid.innerHTML = filtered.map(post => {
+            grid.innerHTML = filtered.map((post, idx) => {
                 const isVideo = post.type === 'Video';
                 const rawThumb = post.thumbnail || 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=85';
                 const thumbUrl = resolveDriveImageUrl(rawThumb);
+                const staggerDelay = (idx % 3) * 90;
 
                 return `
                     <article
                         onclick="openContentReaderModal('${escapeHtml(String(post.id))}')"
-                        class="bg-rcSurface border border-rcBorder hover:border-rcOrange/50 rounded-3xl overflow-hidden cursor-pointer flex flex-col justify-between transition group"
+                        style="transition-delay: ${staggerDelay}ms;"
+                        class="reveal-on-scroll reveal-scale bg-rcSurface border border-rcBorder hover:border-rcOrange/50 rounded-3xl overflow-hidden cursor-pointer flex flex-col justify-between transition group"
                     >
                         <div>
                             <div class="relative aspect-video bg-rcCard overflow-hidden">
@@ -1731,12 +1797,14 @@
                     </article>
                 `;
             }).join('');
+
+            refreshScrollRevealElements(grid);
         }
 
         function extractYouTubeEmbedUrl(url) {
             const raw = String(url || '').trim();
             if (!raw) return '';
-            const match = raw.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            const match = raw.match(/(?:youtube\\.com\\/(?:watch\\?v=|embed\\/|shorts\\/)|youtu\\.be\\/)([a-zA-Z0-9_-]{11})/);
             if (match && match[1]) {
                 return `https://www.youtube.com/embed/${match[1]}?rel=0`;
             }
@@ -1828,15 +1896,15 @@
             const lokasi = (document.getElementById('clientLocationInput')?.value || '').trim() || 'Jakarta Timur';
             const catatan = (document.getElementById('clientNotesInput')?.value || '').trim();
 
-            const template = activePublicSettings.waTemplate || "Halo Bang Rohman (Rohman Capture)! 👋\nPerkenalkan gue *{nama}*, mau tanya jadwal & booking sesi foto:\n\n• *Kategori:* {kategori}\n• *Tanggal:* {tanggal}\n• *Lokasi:* {lokasi}\n\nTerima kasih bro!";
+            const template = activePublicSettings.waTemplate || "Halo Bang Rohman (Rohman Capture)! 👋\\nPerkenalkan gue *{nama}*, mau tanya jadwal & booking sesi foto:\\n\\n• *Kategori:* {kategori}\\n• *Tanggal:* {tanggal}\\n• *Lokasi:* {lokasi}\\n\\nTerima kasih bro!";
             let message = template
-                .replace(/\{nama\}/gi, nama)
-                .replace(/\{kategori\}/gi, kategori)
-                .replace(/\{tanggal\}/gi, tanggal)
-                .replace(/\{lokasi\}/gi, lokasi);
+                .replace(/\\{nama\\}/gi, nama)
+                .replace(/\\{kategori\\}/gi, kategori)
+                .replace(/\\{tanggal\\}/gi, tanggal)
+                .replace(/\\{lokasi\\}/gi, lokasi);
 
             if (catatan) {
-                message += `\n\n• *Catatan:* ${catatan}`;
+                message += `\\n\\n• *Catatan:* ${catatan}`;
             }
 
             const waDigits = normalizeWaNumber(activePublicSettings.whatsappNumber || '089640047789');
@@ -1987,6 +2055,7 @@
             renderPortfolioFilterBar();
             filterPortfolio(currentFilter);
             filterContentPosts(currentContentFilter);
+            refreshScrollRevealElements();
         }
 
         async function syncFromCloud() {
@@ -2051,6 +2120,7 @@
         }
 
         function initPublicSite() {
+            initScrollRevealObserver();
             loadLocalAndCachedState();
             portfolioVisibleLimit = getInitialPortfolioLimit();
             rerenderPublicSections();
@@ -2074,4 +2144,9 @@
         }
     </script>
 </body>
-</html>
+</html>"""
+
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(html_code)
+
+print("Generated index.html successfully. Length:", len(html_code))
