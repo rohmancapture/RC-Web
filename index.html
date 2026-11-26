@@ -203,26 +203,31 @@
             transform: scale(1.05);
         }
 
-        /* Smooth Scroll Reveal Animations */
+        /* Smooth Scroll Reveal Animations (Desktop & Mobile Optimized) */
         .reveal-on-scroll {
             opacity: 0;
-            transform: translateY(26px);
-            transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1), transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+            -webkit-transform: translate3d(0, 24px, 0);
+            transform: translate3d(0, 24px, 0);
+            -webkit-transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), -webkit-transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
             will-change: opacity, transform;
         }
 
         .reveal-on-scroll.reveal-scale {
-            transform: translateY(22px) scale(0.97);
+            -webkit-transform: translate3d(0, 20px, 0) scale(0.96);
+            transform: translate3d(0, 20px, 0) scale(0.96);
         }
 
         .reveal-on-scroll.is-visible {
-            opacity: 1;
-            transform: translateY(0) scale(1);
+            opacity: 1 !important;
+            -webkit-transform: translate3d(0, 0, 0) scale(1) !important;
+            transform: translate3d(0, 0, 0) scale(1) !important;
         }
 
         @media (prefers-reduced-motion: reduce) {
             .reveal-on-scroll {
                 opacity: 1 !important;
+                -webkit-transform: none !important;
                 transform: none !important;
                 transition: none !important;
             }
@@ -619,7 +624,7 @@
                         </p>
 
                         <div class="space-y-3 pt-2">
-                            <div class="p-4 rounded-2xl bg-rcCard border border-rcBorder flex items-center gap-3.5">
+                            <div class="p-4 rounded-2xl bg-rcCard border border-rcBorder flex items-center gap-3.5 reveal-on-scroll">
                                 <span class="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
                                     <i class="fa-brands fa-whatsapp text-lg"></i>
                                 </span>
@@ -629,7 +634,7 @@
                                 </div>
                             </div>
 
-                            <div class="p-4 rounded-2xl bg-rcCard border border-rcBorder flex items-center gap-3.5">
+                            <div class="p-4 rounded-2xl bg-rcCard border border-rcBorder flex items-center gap-3.5 reveal-on-scroll">
                                 <span class="w-10 h-10 rounded-2xl bg-rcOrange/15 text-rcOrange flex items-center justify-center shrink-0">
                                     <i class="fa-brands fa-instagram text-lg"></i>
                                 </span>
@@ -641,7 +646,7 @@
                                 </div>
                             </div>
 
-                            <div class="p-4 rounded-2xl bg-rcCard border border-rcBorder flex items-center gap-3.5">
+                            <div class="p-4 rounded-2xl bg-rcCard border border-rcBorder flex items-center gap-3.5 reveal-on-scroll">
                                 <span class="w-10 h-10 rounded-2xl bg-rcOrange/15 text-rcOrange flex items-center justify-center shrink-0">
                                     <i class="fa-solid fa-location-dot text-base"></i>
                                 </span>
@@ -1164,12 +1169,22 @@
             }
         ];
 
+        function revealVisibleElementsInViewport(rootContainer = document) {
+            const vh = window.innerHeight || document.documentElement.clientHeight || 800;
+            const elements = rootContainer.querySelectorAll('.reveal-on-scroll:not(.is-visible)');
+            elements.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                if (rect.top <= vh * 0.94 && rect.bottom >= -40) {
+                    el.classList.add('is-visible');
+                    if (scrollRevealObserver) {
+                        try { scrollRevealObserver.unobserve(el); } catch (e) {}
+                    }
+                }
+            });
+        }
+
         function initScrollRevealObserver() {
-            if (!('IntersectionObserver' in window)) {
-                document.querySelectorAll('.reveal-on-scroll').forEach(el => el.classList.add('is-visible'));
-                return;
-            }
-            if (!scrollRevealObserver) {
+            if ('IntersectionObserver' in window && !scrollRevealObserver) {
                 scrollRevealObserver = new IntersectionObserver((entries, observer) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
@@ -1178,20 +1193,39 @@
                         }
                     });
                 }, {
-                    threshold: 0.08,
-                    rootMargin: '0px 0px -30px 0px'
+                    threshold: 0.01,
+                    rootMargin: '0px 0px -10px 0px'
                 });
             }
+
+            if (!window._rcScrollRevealBound) {
+                window._rcScrollRevealBound = true;
+                let scrollTicking = false;
+                const onScrollOrTouch = () => {
+                    if (!scrollTicking) {
+                        scrollTicking = true;
+                        window.requestAnimationFrame(() => {
+                            revealVisibleElementsInViewport(document);
+                            scrollTicking = false;
+                        });
+                    }
+                };
+                window.addEventListener('scroll', onScrollOrTouch, { passive: true });
+                window.addEventListener('touchmove', onScrollOrTouch, { passive: true });
+                window.addEventListener('resize', onScrollOrTouch, { passive: true });
+            }
+
             refreshScrollRevealElements();
         }
 
         function refreshScrollRevealElements(rootContainer = document) {
             const elements = rootContainer.querySelectorAll('.reveal-on-scroll:not(.is-visible)');
-            if (!scrollRevealObserver) {
-                elements.forEach(el => el.classList.add('is-visible'));
-                return;
+            if (scrollRevealObserver) {
+                elements.forEach(el => scrollRevealObserver.observe(el));
             }
-            elements.forEach(el => scrollRevealObserver.observe(el));
+            window.requestAnimationFrame(() => {
+                revealVisibleElementsInViewport(rootContainer);
+            });
         }
 
         function escapeHtml(str) {
@@ -1507,7 +1541,7 @@
                 const rawCover = slides[0] || item.image || '';
                 const coverUrl = resolveDriveImageUrl(rawCover);
                 const storyText = item.story || item.description || '';
-                const staggerDelay = (idx % 3) * 90;
+                const staggerDelay = window.innerWidth < 640 ? Math.min(idx * 60, 180) : (idx % 3) * 90;
 
                 return `
                     <article
@@ -1737,7 +1771,7 @@
                 const isVideo = post.type === 'Video';
                 const rawThumb = post.thumbnail || 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=85';
                 const thumbUrl = resolveDriveImageUrl(rawThumb);
-                const staggerDelay = (idx % 3) * 90;
+                const staggerDelay = window.innerWidth < 640 ? Math.min(idx * 60, 180) : (idx % 3) * 90;
 
                 return `
                     <article
